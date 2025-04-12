@@ -14,14 +14,19 @@
     "@types/node": "^20.6.0",
     "classnames": "^2.3.2",
     "framer-motion": "^10.12.16",
-    "next": "13.5.11",
+    "next": "^15.3.0",
     "pdfmake": "^0.2.7",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hot-toast": "^2.4.0",
     "uuid": "^9.0.0",
+<<<<<<< Updated upstream
     "viem": "^1.20.0",
     "wagmi": "^1.5.2"
+=======
+    "viem": "^2.0.0",
+    "wagmi": "^2.14.16"
+>>>>>>> Stashed changes
   },
   "devDependencies": {
     "@types/react": "^18.2.15",
