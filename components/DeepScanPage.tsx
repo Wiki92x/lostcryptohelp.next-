@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
-import { generatePDF } from '@/lib/generatePDF';
+import { generatePDF } from '../utils/generatePDF';
 
 interface ScanResult {
   address: string;
