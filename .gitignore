@@ -1,0 +1,29 @@
+# === Node & Next.js ===
+node_modules/
+.next/
+out/
+build/
+dist/
+.cache/
+
+# === Environment Variables ===
+.env
+.env.*.local
+.env.local
+
+# === Logs ===
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# === OS & System Files ===
+.DS_Store
+*.pem
+
+# === IDE & Editor Folders ===
+.vscode/
+.idea/
+
+# === Deployment Platforms ===
+.vercel/
+.netlify/
