@@ -79,7 +79,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const topTransfers = data.result.slice(0, 10);
-    const transfers = [];
+    const transfers: any[] = [];
 
     for (const tx of topTransfers) {
       const contract = tx.contractAddress?.toLowerCase();
