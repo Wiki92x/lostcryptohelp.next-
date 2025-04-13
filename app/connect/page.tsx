@@ -20,6 +20,7 @@ export default function ConnectWalletPage() {
             <p className="text-sm mb-4 text-green-400">Connected:</p>
             <p className="break-all text-gray-200 font-mono text-sm mb-6">{address}</p>
             <button
+              id="disconnect-btn"
               onClick={() => disconnect()}
               className="w-full py-3 rounded-md bg-red-600 hover:bg-red-700 transition"
             >
@@ -28,6 +29,7 @@ export default function ConnectWalletPage() {
           </>
         ) : (
           <button
+            id="connect-btn"
             onClick={() => connect()}
             className="w-full py-3 rounded-md bg-purple-600 hover:bg-purple-700 transition font-semibold"
           >
