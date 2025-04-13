@@ -1,3 +1,4 @@
+// ✅ pages/pricing.tsx
 'use client';
 
 import { CheckCircle } from 'lucide-react';
