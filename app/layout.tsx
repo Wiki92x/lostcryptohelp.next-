@@ -1,10 +1,10 @@
-// ✅ Correct global import path
+// ✅ app/layout.tsx
 import '@/styles/globals.css';
-
 import { WagmiConfig } from 'wagmi';
 import wagmiConfig from '@/lib/wagmiClient';
 import ThemeProviderWrapper from '@/components/ThemeProviderWrapper';
 import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer'; // <- ✅ Add this
 
 export const metadata = {
   title: 'LostCryptoHelp',
@@ -19,6 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <WagmiConfig config={wagmiConfig}>
             <Navbar />
             <main className="pt-20 px-4">{children}</main>
+            <Footer /> {/* ✅ Add this line */}
           </WagmiConfig>
         </ThemeProviderWrapper>
       </body>
