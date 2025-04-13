@@ -29,7 +29,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const json = await telegramRes.json();
     console.log('[Telegram Response]', json);
 
-    if (!json.ok) throw new Error(json.description || 'Telegram failed');
+    if (!json.ok) {
+      console.error('[Telegram Error]', json.description);
+      return res.status(500).json({ error: 'Telegram send failed', details: json.description });
+    }
 
     return res.status(200).json({ success: true });
   } catch (err: any) {
