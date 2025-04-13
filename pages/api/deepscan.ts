@@ -1,4 +1,3 @@
-// ✅ pages/api/deepscan.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import fetch from 'node-fetch';
 
@@ -8,7 +7,6 @@ const WHITELIST = [
   'TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf',
 ];
 
-// 🧠 Risk score weights
 const RISK_WEIGHTS: Record<string, number> = {
   is_honeypot: 25,
   can_take_back_ownership: 20,
@@ -18,20 +16,13 @@ const RISK_WEIGHTS: Record<string, number> = {
   trading_cooldown: 5,
 };
 
-// 🔐 Score calculator
 function calculateRiskScore(riskFlags: Record<string, string>): number {
-  let total = 0;
-  for (const [flag, weight] of Object.entries(RISK_WEIGHTS)) {
-    if (riskFlags[flag] === '1') total += weight;
-  }
-  return Math.min(total, 100);
+  return Object.entries(RISK_WEIGHTS).reduce((total, [flag, weight]) => {
+    return total + (riskFlags[flag] === '1' ? weight : 0);
+  }, 0);
 }
 
-// ✅ API Handler
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-): Promise<void> {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
     return;
@@ -75,11 +66,11 @@ export default async function handler(
   try {
     if (chain === 'tron') {
       const tronRes = await fetch(
-        `${baseUrls.tron}?sort=-timestamp&count=true&limit=10&start=0&address=${wallet}`
+        `${baseUrls.tron}?sort=-timestamp&count=true&limit=50&start=0&address=${wallet}`
       );
       const data = await tronRes.json();
 
-      const transactions = data.data.slice(0, 10).map((tx: any) => ({
+      const transactions = data.data.map((tx: any) => ({
         date: tx.block_timestamp?.split(' ')[0],
         transactionId: tx.hash,
         amount: tx.amount,
@@ -88,6 +79,8 @@ export default async function handler(
         risk_flags: {},
         riskScore: 0,
       }));
+
+      await sendTelegramAlert(wallet, 'TRON', 0, 'TRX', transactions.length);
 
       res.status(200).json({
         address: wallet,
@@ -107,25 +100,12 @@ export default async function handler(
       return;
     }
 
-    // 🔁 Analyze top transfers
-    const transfers: {
-      date: string;
-      transactionId: string;
-      amount: string;
-      token: string;
-      symbol: string;
-      risk_flags: Record<string, string>;
-      riskScore: number;
-    }[] = [];
-
-    const topTransfers = data.result.slice(0, 10);
+    const topTransfers = data.result.slice(0, 100);
+    const transfers = [];
 
     for (const tx of topTransfers) {
       const contract = tx.contractAddress?.toLowerCase();
-
-      const riskRes = await fetch(
-        `https://api.gopluslabs.io/api/v1/token_security/1?contract_addresses=${contract}`
-      );
+      const riskRes = await fetch(`https://api.gopluslabs.io/api/v1/token_security/1?contract_addresses=${contract}`);
       const riskData = await riskRes.json();
       const riskFlags = riskData.result?.[contract] || {};
       const tokenRiskScore = calculateRiskScore(riskFlags);
@@ -145,6 +125,10 @@ export default async function handler(
       transfers.reduce((sum, t) => sum + (t.riskScore || 0), 0) / transfers.length
     );
 
+    const topToken = transfers.sort((a, b) => b.riskScore - a.riskScore)[0]?.symbol || 'N/A';
+
+    await sendTelegramAlert(wallet, chain.toUpperCase(), averageScore, topToken, transfers.length);
+
     res.status(200).json({
       address: wallet,
       chain: chain.toUpperCase(),
@@ -155,4 +139,22 @@ export default async function handler(
     console.error('[DeepScan Error]', err);
     res.status(500).json({ error: 'Internal Server Error', details: err.message });
   }
+}
+
+async function sendTelegramAlert(wallet: string, chain: string, score: number, token: string, txCount: number) {
+  const bot = process.env.VITE_TELEGRAM_BOT_TOKEN;
+  const chat = process.env.VITE_TELEGRAM_CHAT_ID;
+  if (!bot || !chat) return;
+
+  const msg = `🧠 *Deep Scan Completed*\n\nWallet: \`${wallet}\`\nChain: ${chain}\nRisk Score: ${score}/100\nTop Token: ${token}\nTransactions: ${txCount}`;
+
+  await fetch(`https://api.telegram.org/bot${bot}/sendMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      chat_id: chat,
+      text: msg,
+      parse_mode: 'Markdown',
+    }),
+  });
 }
