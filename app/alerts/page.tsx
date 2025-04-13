@@ -4,7 +4,7 @@ import { useAccount } from 'wagmi';
 
 export default function AlertsPage() {
   const { address, isConnected } = useAccount();
-  const TELEGRAM_BOT_URL = 'https://t.me/YOUR_BOT_USERNAME'; // ✅ update this before deploy
+  const TELEGRAM_BOT_URL = 'https://t.me/@lostcryptohelp_bot'; // ✅ update this before deploy
 
   return (
     <div className="min-h-screen bg-black text-white px-4 md:px-6 py-20">
