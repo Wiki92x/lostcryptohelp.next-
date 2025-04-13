@@ -1,10 +1,10 @@
 'use client';
+
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { ArrowRightIcon } from '@heroicons/react/24/outline';
 import ConnectWalletButton from './ConnectWalletButton';
-
 
 export default function HeroSection() {
   const [mounted, setMounted] = useState(false);
@@ -39,6 +39,11 @@ export default function HeroSection() {
           >
             See how it works
           </Link>
+        </div>
+
+        {/* ✅ Wallet Connect Button */}
+        <div className="mt-8">
+          <ConnectWalletButton />
         </div>
       </div>
     </motion.section>
