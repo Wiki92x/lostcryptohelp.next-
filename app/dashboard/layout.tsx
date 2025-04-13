@@ -5,7 +5,8 @@ import { usePathname } from 'next/navigation';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const path = usePathname();
-  const cleanPath = path.replace('/dashboard', '') || '/overview';
+  const cleanPath = path?.replace('/dashboard', '') || '/overview';
+
 
   return (
     <motion.section
