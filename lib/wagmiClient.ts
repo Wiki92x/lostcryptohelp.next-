@@ -1,15 +1,22 @@
 'use client';
 
-import { configureChains, createConfig } from 'wagmi';
-import { mainnet } from 'wagmi/chains';
+import { createConfig, configureChains } from 'wagmi';
 import { publicProvider } from 'wagmi/providers/public';
+import { mainnet, bsc, polygon } from 'wagmi/chains';
 
-const { chains, publicClient } = configureChains(
-  [mainnet],
-  [publicProvider()]
-);
+let wagmiConfig = undefined;
 
-export const wagmiConfig = createConfig({
-  autoConnect: true,
-  publicClient,
-});
+if (typeof window !== 'undefined') {
+  const { chains, publicClient, webSocketPublicClient } = configureChains(
+    [mainnet, bsc, polygon], // 👉 add or change chains as needed
+    [publicProvider()]
+  );
+
+  wagmiConfig = createConfig({
+    autoConnect: true,
+    publicClient,
+    webSocketPublicClient,
+  });
+}
+
+export default wagmiConfig;
