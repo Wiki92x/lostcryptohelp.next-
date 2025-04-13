@@ -1,40 +1,83 @@
-// pages/thank-you.tsx
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { useEffect } from 'react';
-import { CheckCircle } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { ArrowLeft } from 'lucide-react';
 
 export default function ThankYouPage() {
+  const [result, setResult] = useState<any>(null);
   const router = useRouter();
 
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      router.prefetch('/');
-    }, 1000);
-
-    return () => clearTimeout(timeout);
+    const stored = localStorage.getItem('scanResult');
+    if (stored) setResult(JSON.parse(stored));
   }, []);
 
+  if (!result) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <p className="text-gray-400">No scan result found. Please run a scan first.</p>
+      </div>
+    );
+  }
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 40 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
-      className="min-h-screen flex flex-col items-center justify-center px-6 bg-black text-white text-center"
-    >
-      <CheckCircle className="h-16 w-16 text-green-400 mb-4" />
-      <h1 className="text-3xl font-bold mb-2 text-purple-400">Scan Submitted!</h1>
-      <p className="text-gray-300 mb-6 max-w-md">
-        Your wallet scan has been submitted successfully. You’ll receive Telegram alerts (if opted), and your PDF report will be ready shortly.
-      </p>
-      <button
-        onClick={() => router.push('/')}
-        className="bg-purple-600 hover:bg-purple-700 px-6 py-2 text-white rounded-xl transition"
-      >
-        ← Back to Homepage
-      </button>
-    </motion.div>
+    <div className="min-h-screen bg-black text-white px-6 py-12">
+      <div className="max-w-3xl mx-auto space-y-6">
+        <h1 className="text-3xl font-bold text-purple-400">🔍 Scan Complete</h1>
+        <p className="text-gray-300">Here are the results of your wallet scan:</p>
+
+        <div className="bg-zinc-900 p-4 rounded-lg space-y-2">
+          <div><span className="font-semibold">Wallet:</span> {result.address}</div>
+          <div><span className="font-semibold">Chain:</span> {result.chain}</div>
+          <div><span className="font-semibold">Risk Score:</span> {result.riskScore}</div>
+        </div>
+
+        <h2 className="text-xl font-semibold mt-6 text-purple-300">📋 Recent Transactions</h2>
+        <table className="w-full text-sm text-left border border-gray-700 rounded-md overflow-hidden">
+          <thead className="bg-gray-800 text-purple-200">
+            <tr>
+              <th className="p-2">Date</th>
+              <th className="p-2">Token</th>
+              <th className="p-2">Amount</th>
+              <th className="p-2">Tx Hash</th>
+            </tr>
+          </thead>
+          <tbody className="bg-gray-900">
+            {result.transactions.map((tx: any, i: number) => (
+              <tr key={i} className="border-t border-gray-700">
+                <td className="p-2">{tx.date}</td>
+                <td className="p-2">{tx.token} ({tx.symbol})</td>
+                <td className="p-2">{tx.amount}</td>
+                <td className="p-2">
+                  <a
+                    href={`https://${
+                      result.chain.toLowerCase() === 'eth'
+                        ? 'etherscan.io'
+                        : result.chain.toLowerCase() === 'bsc'
+                        ? 'bscscan.com'
+                        : 'tronscan.org'
+                    }/tx/${tx.transactionId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-400 hover:underline"
+                  >
+                    {tx.transactionId.slice(0, 6)}...{tx.transactionId.slice(-4)}
+                  </a>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        <button
+          onClick={() => router.push('/')}
+          className="mt-6 bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg"
+        >
+          <ArrowLeft className="inline-block mr-2" size={18} />
+          Back to Homepage
+        </button>
+      </div>
+    </div>
   );
 }
