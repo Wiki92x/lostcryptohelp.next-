@@ -1,28 +1,45 @@
-// app/deep-scan/page.tsx
 'use client';
 
 import { useState } from 'react';
-import { Loader2, ShieldCheck, FileWarning, FileJson } from 'lucide-react';
+import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 
-const chains = [
-  { id: 'eth', name: 'Ethereum ($1.5)' },
-  { id: 'bsc', name: 'Binance Smart Chain ($0.5)' },
-  { id: 'tron', name: 'TRON (Free)' },
-];
+const fees = {
+  eth: 1.5,
+  bsc: 0.5,
+  tron: 0,
+};
+
+const paymentAddresses = {
+  eth: '0xa85f4DDE28941e41633b575D3a026A8B42887795',
+  bsc: '0xa85f4DDE28941e41633b575D3a026A8B42887795',
+  tron: 'TVH1roHbPn5qCj14Dy1GSVrB5XDcsjgEyX',
+};
 
 export default function DeepScanPage() {
   const [wallet, setWallet] = useState('');
   const [chain, setChain] = useState('eth');
-  const [loading, setLoading] = useState(false);
+  const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState('');
-  const [showJson, setShowJson] = useState(false);
+  const [showPayment, setShowPayment] = useState(false);
+  const [showJSON, setShowJSON] = useState(false);
 
-  const scanWallet = async () => {
-    setLoading(true);
+  const isValidWallet = (addr: string) =>
+    /^0x[a-fA-F0-9]{40}$/.test(addr) || /^T[a-zA-Z0-9]{33,34}$/.test(addr);
+
+  const handleScan = async () => {
+    if (!wallet || !isValidWallet(wallet)) {
+      setError('Enter a valid Ethereum, BSC, or TRON wallet address');
+      toast.error('Invalid wallet address');
+      return;
+    }
+
+    setScanning(true);
     setError('');
     setResult(null);
+    setShowPayment(false);
+    toast.loading('Scanning in progress...');
 
     try {
       const res = await fetch('/api/deepscan', {
@@ -32,128 +49,192 @@ export default function DeepScanPage() {
       });
 
       const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || 'Scan failed');
-        toast.error(data.error || 'Scan failed');
+
+      if (res.status === 402) {
+        setShowPayment(true);
+        toast.dismiss();
+        toast.error('Payment required');
         return;
       }
 
+      if (!res.ok) throw new Error(data.error || 'Scan failed');
       setResult(data);
-    } catch (err) {
-      toast.error('Scan error');
-      setError('Unexpected error occurred.');
+      toast.success('Scan complete');
+
+      // ✅ Trigger Telegram alert
+      await fetch('/api/telegram-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ result: data }),
+      });
+    } catch (err: any) {
+      setError(err.message || 'Something went wrong');
+      toast.error(err.message || 'Scan failed');
     } finally {
-      setLoading(false);
+      setScanning(false);
+      toast.dismiss();
     }
   };
 
+  const handleVerifyPayment = async () => {
+    toast.loading('Verifying payment...');
+    try {
+      const res = await fetch('/api/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ wallet, chain }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || 'Verification failed');
+
+      setResult(data);
+      setShowPayment(false);
+      toast.success('Payment verified. Scan complete.');
+
+      // ✅ Trigger Telegram alert after payment
+      await fetch('/api/telegram-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ result: data }),
+      });
+    } catch (err: any) {
+      toast.error(err.message || 'Verification failed');
+    } finally {
+      toast.dismiss();
+    }
+  };
+
+  const downloadPDF = async () => {
+    const res = await fetch('/api/generate-pdf', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(result),
+    });
+
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'scan-report.pdf';
+    a.click();
+  };
+
   return (
-    <div className="max-w-3xl mx-auto py-10 px-4 text-white">
-      <h1 className="text-3xl font-bold text-center text-purple-400 mb-6">Deep Wallet Scanner</h1>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="min-h-screen py-12 px-4 bg-[var(--background)] text-[var(--foreground)] flex flex-col items-center"
+    >
+      <div className="w-full max-w-xl bg-zinc-900 p-6 rounded-2xl shadow-xl">
+        <h1 className="text-3xl font-bold text-purple-400 text-center mb-6">Deep Wallet Scanner</h1>
 
-      <select
-        className="w-full mb-4 px-4 py-2 bg-zinc-900 border border-zinc-700 rounded"
-        value={chain}
-        onChange={(e) => setChain(e.target.value)}
-      >
-        {chains.map((c) => (
-          <option key={c.id} value={c.id}>{c.name}</option>
-        ))}
-      </select>
+        <select
+          value={chain}
+          onChange={(e) => setChain(e.target.value)}
+          className="w-full p-2 rounded bg-gray-900 border border-gray-700 mb-4"
+        >
+          <option value="eth">Ethereum (${fees.eth})</option>
+          <option value="bsc">Binance Smart Chain (${fees.bsc})</option>
+          <option value="tron">TRON (Free)</option>
+        </select>
 
-      <input
-        type="text"
-        value={wallet}
-        onChange={(e) => setWallet(e.target.value)}
-        placeholder="0x... or TRON address"
-        className="w-full mb-4 px-4 py-2 bg-zinc-900 border border-zinc-700 rounded"
-      />
+        <input
+          type="text"
+          value={wallet}
+          onChange={(e) => setWallet(e.target.value)}
+          placeholder="Wallet Address"
+          className="w-full p-2 rounded bg-gray-900 border border-gray-700 mb-4"
+        />
 
-      <button
-        onClick={scanWallet}
-        disabled={loading}
-        className="w-full py-2 bg-purple-600 hover:bg-purple-700 rounded font-semibold"
-      >
-        {loading ? <Loader2 className="animate-spin mx-auto" /> : 'Start Deep Scan'}
-      </button>
+        <button
+          onClick={handleScan}
+          disabled={scanning}
+          className="w-full bg-purple-600 hover:bg-purple-700 transition py-2 rounded mb-2 font-semibold"
+        >
+          {scanning ? 'Scanning...' : 'Start Deep Scan'}
+        </button>
 
-      <button
-        onClick={() => window.location.href = '/'}
-        className="w-full mt-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded text-sm"
-      >
-        ← Back to Homepage
-      </button>
+        <button
+          onClick={() => window.location.href = '/'}
+          className="w-full bg-gray-700 hover:bg-gray-600 transition py-2 rounded text-sm"
+        >
+          ← Back to Homepage
+        </button>
 
-      {error && (
-        <div className="bg-red-800 mt-6 text-center py-2 rounded">
-          ❌ {error}
-        </div>
-      )}
-
-      {result && (
-        <div className="mt-6 border border-zinc-700 bg-zinc-900 rounded p-4">
-          <div className="flex items-center mb-4">
-            <ShieldCheck className="text-green-400 mr-2" />
-            <span className="text-green-400 font-medium">{result.chain} scan complete</span>
-          </div>
-          <div className="text-sm text-zinc-300 mb-2">
-            <div><strong>Risk Score:</strong> {result.riskScore}</div>
-            <div><strong>Wallet:</strong> {result.address}</div>
-          </div>
-
-          <div className="flex gap-3 mt-3 mb-3">
+        {showPayment && (
+          <div className="bg-red-800 text-white p-4 rounded mt-4 text-sm space-y-2">
+            <p>💸 Please pay <strong>${fees[chain]}</strong> to:</p>
+            <p className="break-all text-purple-300">{paymentAddresses[chain]}</p>
             <button
-              className="bg-zinc-800 hover:bg-zinc-700 text-xs px-3 py-1 rounded flex items-center gap-1"
-              onClick={() => setShowJson(!showJson)}
+              onClick={handleVerifyPayment}
+              className="w-full bg-green-600 hover:bg-green-700 py-2 rounded mt-2"
             >
-              <FileJson size={14} /> {showJson ? 'Hide' : 'Show'} Raw JSON
+              ✅ I’ve Paid – Verify Payment
             </button>
-            <a
-              href={`https://lostcryptohelp.pro/api/generate-pdf?wallet=${result.address}`}
-              target="_blank"
-              className="bg-green-700 hover:bg-green-600 text-xs px-3 py-1 rounded flex items-center gap-1"
-            >
-              🧾 Download PDF Report
-            </a>
           </div>
+        )}
 
-          {showJson && (
-            <pre className="text-xs bg-black p-3 rounded overflow-x-auto text-green-300 mt-4">
-              {JSON.stringify(result, null, 2)}
-            </pre>
-          )}
+        {error && (
+          <div className="w-full bg-red-800 text-white p-2 rounded mt-4 text-sm text-center">
+            ❌ {error}
+          </div>
+        )}
 
-          <div className="mt-5 border-t pt-4 text-sm">
-            <h3 className="text-lg font-semibold text-purple-300 mb-2">Scan Summary</h3>
-            <div className="mb-1">
-              <strong>Top Token by Risk:</strong> {result.transactions?.[0]?.symbol || 'N/A'} ({result.riskScore})
-            </div>
-            <div>
-              <strong>Most Active Token:</strong> {result.transactions?.[0]?.symbol || 'N/A'}
+        {result && (
+          <div className="mt-6 bg-zinc-800 p-4 rounded text-sm space-y-2">
+            <p className="text-green-400 font-semibold">✅ {result.chain} scan complete</p>
+            <p className="text-purple-300">Risk Score: {result.riskScore}</p>
+            <p className="text-gray-400 text-xs">Wallet: {result.address}</p>
+
+            <div className="flex gap-3 mt-2">
+              <button
+                onClick={() => setShowJSON(!showJSON)}
+                className="bg-gray-700 px-3 py-1 rounded text-xs"
+              >
+                {showJSON ? 'Hide JSON View' : 'Show Raw JSON'}
+              </button>
+
+              <button
+                onClick={downloadPDF}
+                className="bg-green-700 px-3 py-1 rounded text-xs text-white"
+              >
+                📄 Download PDF Report
+              </button>
             </div>
 
-            <div className="mt-4 text-sm text-zinc-300">
-              <p><strong>AI Analysis</strong></p>
-              <p className="text-xs mt-1">
-                This wallet shows {result.transactions?.length}+ transactions. All reviewed token behavior in top tokens and risk scores were generated accordingly.
-              </p>
-            </div>
+            {showJSON && (
+              <pre className="text-xs bg-black text-green-400 p-3 rounded overflow-auto mt-3">
+                {JSON.stringify(result, null, 2)}
+              </pre>
+            )}
+
+            <hr className="border-gray-700 my-3" />
+
+            <p className="font-semibold text-sm text-white">Scan Summary</p>
+            <p className="text-gray-400">Top Token by Risk: <span className="text-green-400">{result.topToken || result.transactions?.[0]?.symbol || 'N/A'} ({result.riskScore})</span></p>
+            <p className="text-gray-400">Most Active Token: {result.transactions?.[0]?.symbol || 'N/A'}</p>
+            <p className="text-gray-400">Scan Confidence: <span className="text-yellow-300">Low</span></p>
+
+            <p className="mt-3 font-semibold text-white">AI Analysis</p>
+            <p className="text-sm text-gray-300">This wallet shows {result.transactions?.length}+ transactions. AI reviewed token behavior in top tokens and risk scores were generated accordingly.</p>
 
             <div className="mt-4">
-              <h4 className="font-semibold mb-2">Last Transactions:</h4>
-              <ul className="text-xs space-y-1">
-                {result.transactions?.slice(0, 10).map((tx: any, i: number) => (
-                  <li key={i} className="flex justify-between bg-zinc-800 px-3 py-2 rounded">
-                    <span className="text-green-400">{tx.symbol}</span>
-                    <span>{tx.amount} on {tx.date}</span>
-                    <span className="text-xs bg-green-700 px-2 py-0.5 rounded text-white">SAFE</span>
+              <p className="text-gray-400 font-medium">Last Transactions:</p>
+              <ul className="list-disc pl-5 space-y-1">
+                {result.transactions?.slice(0, 10).map((tx: any, idx: number) => (
+                  <li key={idx}>
+                    <span className="text-green-400">{tx.symbol}</span> — {tx.amount} on {tx.date}
+                    <span className="ml-2 px-2 bg-green-700 rounded text-xs text-white">SAFE</span>
                   </li>
                 ))}
               </ul>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </motion.div>
   );
 }
