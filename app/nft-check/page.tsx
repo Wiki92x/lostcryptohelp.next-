@@ -23,7 +23,9 @@ export default function NftCheckPage() {
   return (
     <div className="min-h-screen bg-black text-white px-6 py-20">
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-4xl font-bold text-purple-500 mb-6 text-center">NFT Scam & Stolen Checker</h1>
+        <h1 className="text-4xl font-bold text-purple-500 mb-6 text-center">
+          NFT Scam & Stolen Checker
+        </h1>
         <p className="text-gray-400 text-center mb-12">
           Check if your NFTs are safe or flagged as stolen across major platforms.
         </p>
@@ -39,6 +41,9 @@ export default function NftCheckPage() {
               <img
                 src={nft.image}
                 alt={nft.name}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = '/fallback-nft.png';
+                }}
                 className="w-full h-48 object-cover rounded-md mb-4"
               />
               <h2 className="text-lg font-semibold text-purple-400 mb-2">{nft.name}</h2>
@@ -52,7 +57,12 @@ export default function NftCheckPage() {
         </div>
 
         <div className="text-center mt-10 text-sm text-gray-500">
-          Wallet: {isConnected ? <span className="text-green-400">{address}</span> : 'Not Connected'}
+          Wallet:{' '}
+          {isConnected ? (
+            <span className="text-green-400">{address}</span>
+          ) : (
+            'Not Connected'
+          )}
         </div>
       </div>
     </div>
