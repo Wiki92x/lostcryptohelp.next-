@@ -1,9 +1,15 @@
-// app/dashboard/page.tsx
+// app/dashboard/DashboardClient.tsx
 'use client';
 
-import dynamic from 'next/dynamic';
+import { useAccount } from 'wagmi';
 
-const DashboardPage = dynamic(() => import('./DashboardClient'), { ssr: false });
-export default function PageWrapper() {
-  return <DashboardPage />;
+export default function DashboardClient() {
+  const { address, isConnected } = useAccount();
+
+  return (
+    <div className="p-4">
+      <h1 className="text-xl font-bold">Dashboard</h1>
+      <p>Status: {isConnected ? `Connected: ${address}` : 'Not Connected'}</p>
+    </div>
+  );
 }
