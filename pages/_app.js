@@ -12,11 +12,11 @@ import { Toaster } from 'react-hot-toast';
 export default function MyApp({ Component, pageProps }) {
   const [mounted, setMounted] = useState(false);
 
+  // Prevent hydration mismatch
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // 🧪 Prevent hydration mismatch for theme toggle
   if (!mounted || !wagmiConfig) return null;
 
   return (
@@ -31,9 +31,13 @@ export default function MyApp({ Component, pageProps }) {
           <link rel="icon" href="/favicon.ico" />
         </Head>
 
-        <Navbar />
-        <Component {...pageProps} />
-        <Footer />
+        <div className="bg-white text-black dark:bg-black dark:text-white transition-colors duration-300 min-h-screen">
+          <Navbar />
+          <main className="pt-16 px-4">
+            <Component {...pageProps} />
+          </main>
+          <Footer />
+        </div>
 
         <Toaster
           position="top-right"
