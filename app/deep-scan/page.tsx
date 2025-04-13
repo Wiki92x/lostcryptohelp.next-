@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
+import { generatePDF } from '@/utils/generatePDF';
 
 const fees = {
   eth: 1.5,
@@ -116,6 +117,15 @@ export default function DeepScanPage() {
     return 'Low';
   };
 
+  const handleDownloadPDF = async () => {
+    const blob = await generatePDF(result);
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `scan-report-${result.address}.pdf`;
+    link.click();
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -194,6 +204,13 @@ export default function DeepScanPage() {
               className="mt-3 text-xs bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded"
             >
               {showJSON ? 'Hide JSON View' : 'Show Raw JSON'}
+            </button>
+
+            <button
+              onClick={handleDownloadPDF}
+              className="ml-2 text-xs bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-white"
+            >
+              📄 Download PDF Report
             </button>
 
             {showJSON ? (
