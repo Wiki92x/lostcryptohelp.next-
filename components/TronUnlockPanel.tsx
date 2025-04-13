@@ -1,67 +1,98 @@
-// components/TronUnlockPanel.tsx
+'use client';
+
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 
-interface Props {
-  onUnlock: () => void;
-}
-
-export default function TronUnlockPanel({ onUnlock }: Props) {
+export default function TronUnlockPanel({ wallet, transactions, riskScore }: any) {
   const [txHash, setTxHash] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [unlocked, setUnlocked] = useState(false);
+  const [verifying, setVerifying] = useState(false);
 
-  const verifyPayment = async () => {
-    if (!txHash.trim()) return setError('Please enter a transaction hash');
-    setError('');
-    setLoading(true);
-
+  const handleVerify = async () => {
+    if (!txHash) return toast.error('Enter your TRON transaction hash');
+    setVerifying(true);
     try {
-      const res = await fetch('/api/verify-tron.js', {
+      const res = await fetch('/api/verify-tron', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ txHash }),
       });
       const data = await res.json();
-
-      if (res.ok && data.success) {
-        toast.success('TRON payment verified!');
-        onUnlock();
+      if (res.ok) {
+        toast.success('Payment verified. Report unlocked.');
+        setUnlocked(true);
       } else {
-        setError(data.reason || 'Payment verification failed');
+        toast.error(data.reason || 'Verification failed');
       }
     } catch (err) {
-      setError('Network error during verification');
+      toast.error('Verification error');
     } finally {
-      setLoading(false);
+      setVerifying(false);
     }
   };
 
+  const handleTelegram = async () => {
+    await fetch('/api/telegram-report', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ wallet, chain: 'TRON', riskScore, txCount: transactions.length }),
+    });
+    toast.success('Sent to Telegram');
+  };
+
+  const handleDownload = async () => {
+    const res = await fetch('/api/generate-pdf', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ address: wallet, chain: 'TRON', riskScore, transactions }),
+    });
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'tron-scan-report.pdf';
+    link.click();
+    window.URL.revokeObjectURL(url);
+  };
+
   return (
-    <div className="bg-crystalDark border border-purple-600 rounded-lg p-4 mt-6">
-      <p className="text-lg font-semibold mb-2 text-white">🔓 Unlock Full TRON Report</p>
-      <p className="text-sm text-crystalText mb-4">
-        To access the full PDF report, send at least <strong>0.5 USDT (TRC-20)</strong> to: <br />
-        <span className="font-mono text-highlight">TM6HGn9p9ZEo525PATPZanYCA4W9nQezTv</span><br />
-        and paste your transaction hash below to unlock.
-      </p>
-
-      <input
-        type="text"
-        placeholder="Enter TRC-20 transaction hash"
-        className="w-full p-2 rounded bg-zinc-900 text-white border border-gray-700 mb-2"
-        value={txHash}
-        onChange={(e) => setTxHash(e.target.value)}
-      />
-      {error && <p className="text-sm text-red-400">{error}</p>}
-
-      <button
-        onClick={verifyPayment}
-        disabled={loading}
-        className="bg-highlight text-black font-bold py-2 px-4 rounded mt-2 hover:bg-white"
-      >
-        {loading ? 'Verifying...' : 'Verify & Unlock'}
-      </button>
+    <div className="bg-white dark:bg-zinc-900 border border-zinc-700 rounded-md p-4 mt-6 space-y-4">
+      {!unlocked ? (
+        <>
+          <p className="font-medium">🔓 Unlock Full TRON Report</p>
+          <input
+            className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded text-white"
+            value={txHash}
+            onChange={(e) => setTxHash(e.target.value)}
+            placeholder="Enter TRC-20 TX hash"
+          />
+          <button
+            onClick={handleVerify}
+            disabled={verifying}
+            className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
+          >
+            {verifying ? 'Verifying...' : 'Verify Payment'}
+          </button>
+        </>
+      ) : (
+        <>
+          <p className="text-green-400 font-semibold">✅ Verified. You can now download the full report or send it to Telegram.</p>
+          <div className="flex space-x-4 mt-2">
+            <button
+              onClick={handleDownload}
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            >
+              Download PDF
+            </button>
+            <button
+              onClick={handleTelegram}
+              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+            >
+              Send to Telegram
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
