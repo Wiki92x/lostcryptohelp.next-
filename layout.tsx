@@ -2,34 +2,24 @@
 import './globals.css';
 import { WagmiConfig } from 'wagmi';
 import wagmiConfig from '@/lib/wagmiClient';
-import { ThemeProvider } from 'next-themes';
-import { Toaster } from 'react-hot-toast';
+import ThemeProviderWrapper from '@/components/ThemeProviderWrapper';
 import Navbar from '@/components/Navbar';
 
 export const metadata = {
-  title: 'LostCryptoHelp 🚀',
-  description: 'Your crypto safety dashboard',
+  title: 'LostCryptoHelp',
+  description: 'Scan wallets, detect scams, protect crypto',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="bg-black text-white min-h-screen">
-        <WagmiConfig config={wagmiConfig}>
-          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={true}>
+      <body className="bg-[var(--background)] text-[var(--foreground)] transition-colors duration-300">
+        <ThemeProviderWrapper>
+          <WagmiConfig config={wagmiConfig}>
             <Navbar />
             <main className="pt-20 px-4">{children}</main>
-            <Toaster
-              position="top-right"
-              toastOptions={{
-                style: {
-                  background: '#333',
-                  color: '#fff',
-                },
-              }}
-            />
-          </ThemeProvider>
-        </WagmiConfig>
+          </WagmiConfig>
+        </ThemeProviderWrapper>
       </body>
     </html>
   );
