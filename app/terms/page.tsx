@@ -1,66 +1,99 @@
-// app/terms/page.tsx
-import React from 'react';
+// pages/terms.tsx
+
+import Head from 'next/head';
 
 export default function TermsOfService() {
   return (
-    <div className="max-w-4xl mx-auto py-16 px-4 text-crystalText">
-      <h1 className="text-4xl font-bold text-purple-400 mb-6">Terms of Service</h1>
+    <>
+      <Head>
+        <title>Terms of Service - LostCryptoHelp</title>
+        <meta name="description" content="Terms of service for LostCryptoHelp platform" />
+      </Head>
 
-      <p className="mb-6">
-        By accessing or using LostCryptoHelp.pro, you agree to be legally bound by the following terms and conditions. If you do not agree with any part of these terms, please do not use our service.
-      </p>
+      <div className="max-w-4xl mx-auto px-4 py-12 text-sm text-gray-300">
+        <h1 className="text-3xl font-bold text-white mb-6">Terms of Service</h1>
 
-      <ul className="space-y-4 text-sm leading-relaxed">
-        <li>
-          <strong>No Financial Advice:</strong> All information provided on LostCryptoHelp is for informational and forensic purposes only. We do not provide investment, financial, or legal advice.
-        </li>
+        <p className="mb-4">
+          Welcome to LostCryptoHelp.pro. By accessing or using our tools, platform, or services,
+          you agree to be bound by these Terms of Service (“Terms”). If you do not agree with any
+          part, you must not use this platform.
+        </p>
 
-        <li>
-          <strong>No Wallet Access or Storage:</strong> We do not request, store, or access your private keys, seed phrases, or login credentials. All scans are conducted via public blockchain APIs using read-only endpoints.
-        </li>
+        <h2 className="text-xl font-semibold text-white mt-8 mb-2">1. AI-Powered Tool Disclaimer</h2>
+        <p className="mb-4">
+          LostCryptoHelp leverages AI to generate automated wallet scans, risk scores, and token
+          classifications. These outputs are speculative, informational, and may contain errors,
+          hallucinations, or incomplete analysis. You acknowledge that these reports do not
+          constitute factual verification or financial advice.
+        </p>
 
-        <li>
-          <strong>Privacy Disclaimer:</strong> We do not collect personally identifiable information. Any user-submitted content is processed securely and purged after fulfillment.
-        </li>
+        <h2 className="text-xl font-semibold text-white mt-8 mb-2">2. No Affiliation or Endorsement</h2>
+        <p className="mb-4">
+          LostCryptoHelp is not affiliated, endorsed, or associated with Trust Wallet, MetaMask,
+          Binance, Ethereum Foundation, or any blockchain protocol, wallet, or exchange provider.
 
-        <li>
-          <strong>Scan Accuracy & Liability:</strong> While we strive to deliver accurate results, blockchain data may change rapidly. We are not liable for decisions made based on the results of our analysis. Use this tool at your own risk.
-        </li>
+        </p>
 
-        <li>
-          <strong>Payment Terms:</strong> TRON scans are free. ETH and BSC scans require upfront, pay-per-use micro-payments. All payments are final and non-refundable.
-        </li>
+        <h2 className="text-xl font-semibold text-white mt-8 mb-2">3. Informational Use Only</h2>
+        <p className="mb-4">
+          All tools provided are for educational and forensic insight only. We do not offer token
+          recovery, wallet unlocking, or guaranteed fund retrieval. Use of this software is at your
+          sole risk.
+        </p>
 
-        <li>
-          <strong>Third-Party Data:</strong> LostCryptoHelp uses APIs from GoPlus Labs, Etherscan, BscScan, TronScan, and Telegram. We do not control these providers and are not responsible for their uptime or data availability.
-        </li>
+        <h2 className="text-xl font-semibold text-white mt-8 mb-2">4. User Responsibility & Compliance</h2>
+        <p className="mb-4">
+          You are solely responsible for your use of this platform and ensuring compliance with
+          applicable local laws, regulations, or financial rules in your jurisdiction. LostCryptoHelp
+          makes no warranties of legal suitability in your region.
 
-        <li>
-          <strong>Prohibited Use:</strong> You agree not to misuse this service for fraudulent, malicious, or unauthorized purposes, including phishing, scraping, or bypassing smart contract limits.
-        </li>
+        </p>
 
-        <li>
-          <strong>AI Risk Disclaimer:</strong> Some analysis is generated using artificial intelligence and may contain predictive or interpretative content. It may not reflect actual blockchain activity with full precision.
-        </li>
+        <h2 className="text-xl font-semibold text-white mt-8 mb-2">5. Jurisdiction & Arbitration</h2>
+        <p className="mb-4">
+          Any disputes arising out of this agreement will be resolved through binding arbitration
+          under international rules. LostCryptoHelp operates as a decentralized utility and
+          disclaim jurisdictional enforcement. Users waive the right to join class action lawsuits
+          or claims.
+        </p>
 
-        <li>
-          <strong>Non-KYC Platform:</strong> We do not require or verify your identity (KYC). By using this site, you confirm that you are not in a restricted jurisdiction and are solely responsible for complying with your local regulations.
-        </li>
+        <h2 className="text-xl font-semibold text-white mt-8 mb-2">6. Refunds & Payment Terms</h2>
+        <p className="mb-4">
+          All payments for scans, reports, alerts, or services are final. We do not offer refunds
+          for completed scans, failed lookups, or user errors. Payments are considered
+          donations-for-access to decentralized tools.
+        </p>
 
-        <li>
-          <strong>Intellectual Property:</strong> All branding, UI design, code, copy, and generated reports are owned by LostCryptoHelp. You may not copy, reproduce, or redistribute our intellectual property without permission.
-        </li>
+        <h2 className="text-xl font-semibold text-white mt-8 mb-2">7. Platform-as-Utility</h2>
+        <p className="mb-4">
+          LostCryptoHelp is a software interface for publicly available blockchain data. It does not
+          act as a financial institution, investment advisor, security provider, or recovery agent.
+        </p>
 
-        <li>
-          <strong>Jurisdiction & Arbitration:</strong> This service is offered globally and governed by applicable international digital laws. Any dispute arising from your use of LostCryptoHelp shall be resolved via confidential binding arbitration, unless prohibited by law.
-        </li>
+        <h2 className="text-xl font-semibold text-white mt-8 mb-2">8. Data Logging</h2>
+        <p className="mb-4">
+          We may log wallet addresses, scan requests, or error messages to improve platform
+          performance. We do not collect private keys, passwords, or user identity. No KYC is
+          performed.
+        </p>
 
-        <li>
-          <strong>Modifications:</strong> We reserve the right to update these terms at any time. Continued use of this site constitutes agreement with the updated terms.
-        </li>
-      </ul>
+        <h2 className="text-xl font-semibold text-white mt-8 mb-2">9. International Legal Shield</h2>
+        <p className="mb-4">
+          You acknowledge that LostCryptoHelp is operated independently of any registered business
+          entity and does not fall under specific country-level financial regulation. You release
+          the creators from liability in all jurisdictions, including the US, EU, UAE, UK, and India.
+        </p>
 
-      <p className="text-xs text-gray-500 mt-6">Last updated: 4/14/2025</p>
-    </div>
+        <h2 className="text-xl font-semibold text-white mt-8 mb-2">10. Changes to Terms</h2>
+        <p className="mb-4">
+          We may update these Terms from time to time without notice. Continued use of the platform
+          constitutes acceptance of the latest Terms.
+        </p>
+
+        <p className="mt-6 text-gray-400">
+          Last updated: {new Date().toLocaleDateString()}
+        </p>
+      </div>
+    </>
   );
 }
