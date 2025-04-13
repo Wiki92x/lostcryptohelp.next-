@@ -1,8 +1,8 @@
-// pages/deepscan.page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 
 const fees = {
@@ -14,14 +14,15 @@ const fees = {
 const paymentAddresses = {
   eth: '0xa85f4DDE28941e41633b575D3a026A8B42887795',
   bsc: '0xa85f4DDE28941e41633b575D3a026A8B42887795',
-  tron: 'TVH1roHbPn5qCj14Dy1GSVrB5XDcsjgEyX',
+  tron: 'TVH1roHbPn5qCj14Dy1GSVrB5XDcsjgEyX', 
+
 };
 
 export default function DeepScanPage() {
   const [wallet, setWallet] = useState('');
   const [chain, setChain] = useState('eth');
   const [scanning, setScanning] = useState(false);
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState<any>(null);
   const [error, setError] = useState('');
   const [showPayment, setShowPayment] = useState(false);
   const router = useRouter();
@@ -94,14 +95,21 @@ export default function DeepScanPage() {
   };
 
   return (
-    <div className="min-h-screen py-12 px-4 bg-gray-900 text-white flex flex-col items-center justify-center">
-      <div className="w-full max-w-xl bg-zinc-800 p-6 rounded-xl shadow-xl">
-        <h1 className="text-3xl font-bold text-center mb-6">Deep Wallet Scanner</h1>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="min-h-screen py-12 px-4 bg-[var(--background)] text-[var(--foreground)] flex flex-col items-center transition-colors duration-300"
+    >
+      <div className="w-full max-w-xl bg-zinc-900 p-6 rounded-2xl shadow-xl">
+        <h1 className="text-3xl font-bold text-purple-400 text-center mb-6">
+          Deep Wallet Scanner
+        </h1>
 
         <select
           value={chain}
           onChange={(e) => setChain(e.target.value)}
-          className="w-full p-2 rounded bg-zinc-700 mb-4"
+          className="w-full p-2 rounded bg-gray-900 border border-gray-700 mb-4"
         >
           <option value="eth">Ethereum (${fees.eth})</option>
           <option value="bsc">Binance Smart Chain (${fees.bsc})</option>
@@ -113,7 +121,7 @@ export default function DeepScanPage() {
           value={wallet}
           onChange={(e) => setWallet(e.target.value)}
           placeholder="Wallet Address"
-          className="w-full p-2 rounded bg-zinc-700 mb-4"
+          className="w-full p-2 rounded bg-gray-900 border border-gray-700 mb-4"
         />
 
         <button
@@ -124,39 +132,52 @@ export default function DeepScanPage() {
           {scanning ? 'Scanning...' : 'Start Deep Scan'}
         </button>
 
+        <button
+          onClick={() => router.push('/')}
+          className="w-full bg-gray-700 hover:bg-gray-600 transition py-2 rounded text-sm"
+        >
+          ← Back to Homepage
+        </button>
+
         {showPayment && (
-          <div className="mt-4 bg-red-800 text-white p-4 rounded text-sm">
-            <p>Please pay <strong>${fees[chain]}</strong> to:</p>
-            <p className="break-all">{paymentAddresses[chain]}</p>
+          <div className="bg-red-800 text-white p-4 rounded mt-4 text-sm space-y-2">
+            <p>💸 Please pay <strong>${fees[chain]}</strong> to:</p>
+            <p className="break-all text-purple-300">{paymentAddresses[chain] || 'N/A'}</p>
+            <p>Once done, click below:</p>
             <button
               onClick={handleVerifyPayment}
               className="w-full bg-green-600 hover:bg-green-700 py-2 rounded mt-2"
             >
-              Verify Payment
+              ✅ I’ve Paid – Verify Payment
             </button>
           </div>
         )}
 
         {error && (
-          <div className="mt-4 bg-red-700 text-white p-2 rounded text-sm">
-            {error}
+          <div className="w-full bg-red-800 text-white p-2 rounded mt-4 text-sm text-center">
+            ❌ {error}
           </div>
         )}
 
         {result && (
-          <div className="mt-4 bg-zinc-700 p-4 rounded text-sm">
-            <p className="font-bold">Scan Results:</p>
-            <p>Address: {result.address}</p>
-            <p>Chain: {result.chain}</p>
-            <p>Risk Score: {result.riskScore}</p>
-            {result.transactions.map((tx, index) => (
-              <div key={index} className="mt-2">
-                <p>{tx.date} - {tx.transactionId} - {tx.amount}</p>
-              </div>
-            ))}
+          <div className="mt-6 bg-zinc-800 p-4 rounded text-sm space-y-2">
+            <p className="text-green-400 font-semibold">
+              ✅ {result.chain} scan complete
+            </p>
+            <p className="text-purple-300">Risk Score: {result.riskScore}</p>
+            <p className="text-gray-400 text-xs">Wallet: {result.address}</p>
+            <hr className="border-gray-700 my-2" />
+            <p className="text-gray-400 font-medium">Last Transactions:</p>
+            <ul className="list-disc pl-5 space-y-1">
+              {result.transactions?.slice(0, 5).map((tx: any, idx: number) => (
+                <li key={idx}>
+                  <span className="text-green-400">{tx.symbol}</span> — {tx.amount} on {tx.date}
+                </li>
+              ))}
+            </ul>
           </div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }
