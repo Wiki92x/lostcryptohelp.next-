@@ -1,12 +1,12 @@
 // app/layout.tsx
-import '../styles/globals.css';
+import './globals.css';
 import { WagmiConfig } from 'wagmi';
 import wagmiConfig from '@/lib/wagmiClient';
 import ClientOnly from '@/components/ClientOnly';
-import Navbar from '@/components/Navbar'; // ✅ make sure this exists
+import Navbar from '@/components/Navbar';
 
 export const metadata = {
-  title: 'LostCryptoHelp',
+  title: 'LostCryptoHelp 🚀',
   description: 'Your crypto safety dashboard',
 };
 
@@ -17,7 +17,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <WagmiConfig config={wagmiConfig}>
           <ClientOnly>
             <Navbar />
-            <main className="pt-16">{children}</main>
+            <main className="pt-20 px-4">{children}</main>
           </ClientOnly>
         </WagmiConfig>
       </body>
