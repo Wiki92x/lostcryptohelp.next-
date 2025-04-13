@@ -4,7 +4,7 @@ import { createConfig, configureChains } from 'wagmi';
 import { mainnet, polygon, bsc } from 'wagmi/chains';
 import { publicProvider } from 'wagmi/providers/public';
 
-const { chains, publicClient, webSocketPublicClient } = configureChains(
+const { chains, publicClient } = configureChains(
   [mainnet, polygon, bsc],
   [publicProvider()]
 );
@@ -12,7 +12,7 @@ const { chains, publicClient, webSocketPublicClient } = configureChains(
 const wagmiConfig = createConfig({
   autoConnect: true,
   publicClient,
-  webSocketPublicClient,
+  // DO NOT USE webSocketPublicClient in SSR builds unless needed
 });
 
 export default wagmiConfig;
