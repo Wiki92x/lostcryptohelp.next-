@@ -2,26 +2,24 @@
 
 import { motion } from 'framer-motion';
 import { Wallet, ShieldCheck, FileText } from 'lucide-react';
+import Link from 'next/link';
 
 export default function HowItWorks() {
   const steps = [
     {
       icon: <Wallet className="w-6 h-6 text-purple-400" />,
       title: '1. Enter Wallet Address',
-      description:
-        'Paste a public Ethereum, BSC, or TRON address. Choose the chain you want to scan.',
+      description: 'Paste a public Ethereum, BSC, or TRON address. Choose the chain you want to scan.',
     },
     {
       icon: <ShieldCheck className="w-6 h-6 text-purple-400" />,
       title: '2. Deep Analysis',
-      description:
-        'We scan for scams, exploits, malicious approvals, token risks and suspicious contracts.',
+      description: 'We scan for scams, exploits, malicious approvals, token risks and suspicious contracts.',
     },
     {
       icon: <FileText className="w-6 h-6 text-purple-400" />,
       title: '3. Get PDF + Telegram Alert',
-      description:
-        'Download a full risk report and receive instant Telegram alerts. No data stored.',
+      description: 'Download a full risk report and receive instant Telegram alerts. No data stored.',
     },
   ];
 
@@ -32,7 +30,7 @@ export default function HowItWorks() {
           How LostCryptoHelp Works
         </h2>
 
-        <div className="space-y-6">
+        <div className="space-y-6 mb-10">
           {steps.map((step, index) => (
             <motion.div
               key={index}
@@ -54,6 +52,20 @@ export default function HowItWorks() {
             </motion.div>
           ))}
         </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          viewport={{ once: true }}
+        >
+          <Link
+            href="/deep-scan"
+            className="inline-block bg-purple-600 hover:bg-purple-700 text-white font-medium text-sm sm:text-base py-3 px-6 rounded-full transition-colors duration-300"
+          >
+            Start Your First Scan →
+          </Link>
+        </motion.div>
       </div>
     </section>
   );
