@@ -61,7 +61,7 @@ export default function NftCheckPage() {
           {isConnected ? (
             <span className="text-green-400">{address}</span>
           ) : (
-            'Not Connected'
+            <span className="text-yellow-500 italic">Not Connected</span>
           )}
         </div>
       </div>
