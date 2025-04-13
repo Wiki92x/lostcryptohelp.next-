@@ -19,13 +19,13 @@ export default function HomePage() {
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
         viewport={{ once: true }}
-        className="py-20 px-6 bg-zinc-950 text-white text-center dark:bg-zinc-950 bg-white"
+        className="py-20 px-6 bg-[var(--background)] text-[var(--foreground)] text-center"
       >
         <div className="max-w-3xl mx-auto space-y-6">
-          <h2 className="text-3xl font-bold text-purple-400">
+          <h2 className="text-3xl font-bold text-purple-500">
             Ready to scan your wallet?
           </h2>
-          <p className="text-gray-400 text-lg">
+          <p className="text-lg text-gray-500 dark:text-gray-400">
             No login. No KYC. Just pure on-chain wallet risk detection.
           </p>
           <Link href="/deep-scan">
