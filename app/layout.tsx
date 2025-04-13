@@ -2,7 +2,7 @@
 
 import '../styles/globals.css';
 import { WagmiConfig } from 'wagmi';
-import { wagmiConfig } from '@/lib/wagmiClient';
+import wagmiConfig from '@/lib/wagmiClient'; // ✅ fixed default import
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
