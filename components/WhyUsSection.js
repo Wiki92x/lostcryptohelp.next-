@@ -1,61 +1,56 @@
 'use client';
+
 import { motion } from 'framer-motion';
-import { ShieldCheck, Brain, BellRing, Wallet } from 'lucide-react';
+import { ShieldCheck, Lock, Eye } from 'lucide-react';
 
 export default function WhyUsSection() {
-  return (
-    <motion.section
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
-      viewport={{ once: true }}
-      className="bg-zinc-900 text-white py-20 px-6"
-    >
-      <div className="max-w-6xl mx-auto text-center">
-        <h2 className="text-4xl font-bold mb-4">
-          Why Choose <span className="text-purple-400">LostCryptoHelp?</span>
-        </h2>
-        <p className="text-gray-400 max-w-2xl mx-auto mb-12 text-base sm:text-lg">
-          We combine AI detection, blockchain analytics, and real-time alerts to protect you from scams — no KYC, no email, just pure Web3 tools.
-        </p>
+  const features = [
+    {
+      icon: <ShieldCheck className="w-6 h-6 text-purple-400" />,
+      title: 'No KYC, Fully Crypto-Native',
+      desc: 'We don’t require any login, KYC, or email signup. Connect. Scan. Done.',
+    },
+    {
+      icon: <Lock className="w-6 h-6 text-purple-400" />,
+      title: 'Private & Secure',
+      desc: 'Nothing is stored. Everything is self-hosted or on-chain. Telegram alerts are opt-in.',
+    },
+    {
+      icon: <Eye className="w-6 h-6 text-purple-400" />,
+      title: 'Transparent Risk Detection',
+      desc: 'All scan logic is public. We use GoPlus & chain-native APIs for full clarity.',
+    },
+  ];
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {features.map((item, i) => (
+  return (
+    <section className="py-20 px-6 bg-[var(--background)] text-[var(--foreground)] transition-colors">
+      <div className="max-w-6xl mx-auto text-center space-y-6">
+        <motion.h2
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          viewport={{ once: true }}
+          className="text-3xl font-bold text-purple-500"
+        >
+          Why People Trust LostCryptoHelp
+        </motion.h2>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 mt-10">
+          {features.map((f, i) => (
             <motion.div
               key={i}
-              whileHover={{ y: -5 }}
-              className="bg-zinc-800 p-6 rounded-xl shadow transition-all"
+              className="bg-zinc-100 dark:bg-zinc-900 p-6 rounded-xl text-left shadow-md transition-colors"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.1 }}
+              viewport={{ once: true }}
             >
-              <item.icon className="text-purple-400 h-6 w-6 mb-3" />
-              <h3 className="text-lg font-semibold mb-1">{item.title}</h3>
-              <p className="text-sm text-gray-400">{item.desc}</p>
+              <div className="flex items-center gap-3 mb-4">{f.icon}<h3 className="text-lg font-semibold">{f.title}</h3></div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">{f.desc}</p>
             </motion.div>
           ))}
         </div>
       </div>
-    </motion.section>
+    </section>
   );
 }
-
-const features = [
-  {
-    icon: ShieldCheck,
-    title: 'Deep Wallet Scans',
-    desc: 'Scan ETH, BSC, and TRON for scam tokens, fake approvals, and risk flags instantly.',
-  },
-  {
-    icon: Brain,
-    title: 'AI + Human Analysis',
-    desc: 'Get real-time smart flagging with optional upgraded manual audits.',
-  },
-  {
-    icon: BellRing,
-    title: 'Real-Time Telegram Alerts',
-    desc: 'No email needed. Risky activity triggers instant, private Telegram alerts.',
-  },
-  {
-    icon: Wallet,
-    title: 'Crypto-Only Access',
-    desc: 'No credit cards. No KYC. Just pay via your wallet and use directly on-chain.',
-  },
-];
