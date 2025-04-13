@@ -1,15 +1,14 @@
+// lib/wagmiClient.ts
 'use client';
 
 import { createConfig, configureChains } from 'wagmi';
 import { publicProvider } from 'wagmi/providers/public';
 import { mainnet, bsc, polygon } from 'wagmi/chains';
 
-// Prevents build-time SSR error on Netlify
-const isBrowser = typeof window !== 'undefined';
+// ✅ Only run on client to avoid SSR crash
+let wagmiConfig: ReturnType<typeof createConfig> | undefined = undefined;
 
-let wagmiConfig: any = undefined;
-
-if (isBrowser) {
+if (typeof window !== 'undefined') {
   const { chains, publicClient, webSocketPublicClient } = configureChains(
     [mainnet, bsc, polygon],
     [publicProvider()]
