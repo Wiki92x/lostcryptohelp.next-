@@ -1,16 +1,17 @@
-'use client';
-
+// components/DeepScanResult.jsx
 import React, { useState } from 'react';
-import toast from 'react-hot-toast';
+import { generatePDF } from '@/utils/generatePDF';
 
-export default function TronUnlockPanel({ wallet, transactions, riskScore }: any) {
-  const [txHash, setTxHash] = useState('');
+export default function DeepScanResult({ scanData, chain }) {
   const [unlocked, setUnlocked] = useState(false);
+  const [txHash, setTxHash] = useState('');
   const [verifying, setVerifying] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleVerify = async () => {
-    if (!txHash) return toast.error('Enter your TRON transaction hash');
+  const handleVerifyTron = async () => {
     setVerifying(true);
+    setError('');
+
     try {
       const res = await fetch('/api/verify-tron', {
         method: 'POST',
@@ -18,80 +19,104 @@ export default function TronUnlockPanel({ wallet, transactions, riskScore }: any
         body: JSON.stringify({ txHash }),
       });
       const data = await res.json();
-      if (res.ok) {
-        toast.success('Payment verified. Report unlocked.');
+
+      if (res.ok && data.success) {
         setUnlocked(true);
       } else {
-        toast.error(data.reason || 'Verification failed');
+        setError(data.reason || 'Verification failed');
       }
     } catch (err) {
-      toast.error('Verification error');
+      setError('Something went wrong');
     } finally {
       setVerifying(false);
     }
   };
 
-  const handleTelegram = async () => {
+  const handleDownloadPDF = async () => {
+    const pdfBlob = await generatePDF(scanData);
+    const url = URL.createObjectURL(pdfBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'deep-scan-report.pdf';
+    link.click();
+  };
+
+  const handleSendTelegram = async () => {
     await fetch('/api/telegram-report', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ wallet, chain: 'TRON', riskScore, txCount: transactions.length }),
+      body: JSON.stringify(scanData),
     });
-    toast.success('Sent to Telegram');
+    alert('Report sent via Telegram');
   };
 
-  const handleDownload = async () => {
-    const res = await fetch('/api/generate-pdf', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ address: wallet, chain: 'TRON', riskScore, transactions }),
-    });
-    const blob = await res.blob();
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'tron-scan-report.pdf';
-    link.click();
-    window.URL.revokeObjectURL(url);
-  };
+  const isTron = chain === 'tron';
 
   return (
-    <div className="bg-white dark:bg-zinc-900 border border-zinc-700 rounded-md p-4 mt-6 space-y-4">
-      {!unlocked ? (
-        <>
-          <p className="font-medium">🔓 Unlock Full TRON Report</p>
+    <div className="bg-white dark:bg-black p-6 rounded-xl shadow-xl max-w-3xl mx-auto">
+      <h2 className="text-2xl font-semibold mb-4">Deep Scan Result</h2>
+
+      {isTron && !unlocked && (
+        <div className="mb-6 border border-yellow-400 rounded p-4 bg-yellow-50 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200">
+          <p className="mb-2 font-medium">Free preview limited to last 10 transactions.</p>
+          <p className="mb-4">Want full report? Please unlock below:</p>
           <input
-            className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded text-white"
+            className="w-full border px-3 py-2 rounded text-black"
+            placeholder="Enter your TRON TX hash"
             value={txHash}
             onChange={(e) => setTxHash(e.target.value)}
-            placeholder="Enter TRC-20 TX hash"
           />
           <button
-            onClick={handleVerify}
+            onClick={handleVerifyTron}
             disabled={verifying}
-            className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
+            className="mt-3 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded"
           >
-            {verifying ? 'Verifying...' : 'Verify Payment'}
+            {verifying ? 'Verifying...' : 'Verify & Unlock'}
           </button>
-        </>
-      ) : (
-        <>
-          <p className="text-green-400 font-semibold">✅ Verified. You can now download the full report or send it to Telegram.</p>
-          <div className="flex space-x-4 mt-2">
+          {error && <p className="text-red-500 mt-2">{error}</p>}
+        </div>
+      )}
+
+      {(unlocked || chain !== 'tron') && (
+        <div className="space-y-4">
+          <div className="flex gap-4">
             <button
-              onClick={handleDownload}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              onClick={handleDownloadPDF}
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
             >
               Download PDF
             </button>
             <button
-              onClick={handleTelegram}
-              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+              onClick={handleSendTelegram}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
             >
               Send to Telegram
             </button>
           </div>
-        </>
+          {/* Render full scan data below */}
+          <div className="overflow-x-auto mt-6 text-sm">
+            <table className="w-full border border-gray-300 dark:border-gray-700">
+              <thead className="bg-gray-100 dark:bg-gray-800">
+                <tr>
+                  <th className="p-2">Date</th>
+                  <th className="p-2">Token</th>
+                  <th className="p-2">Amount</th>
+                  <th className="p-2">Score</th>
+                </tr>
+              </thead>
+              <tbody>
+                {scanData.transactions.map((tx, i) => (
+                  <tr key={i} className="border-t border-gray-200 dark:border-gray-600">
+                    <td className="p-2">{tx.date}</td>
+                    <td className="p-2">{tx.token} ({tx.symbol})</td>
+                    <td className="p-2">{tx.amount}</td>
+                    <td className="p-2">{tx.riskScore}/100</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       )}
     </div>
   );
