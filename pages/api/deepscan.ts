@@ -1,3 +1,4 @@
+// pages/api/deepscan.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import fetch from 'node-fetch';
 
@@ -24,18 +25,11 @@ function calculateRiskScore(riskFlags: Record<string, string>): number {
   return Math.min(total, 100);
 }
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const { wallet, chain } = req.body;
-  if (!wallet || !chain) {
-    return res.status(400).json({ error: 'Missing wallet or chain' });
-  }
+  if (!wallet || !chain) return res.status(400).json({ error: 'Missing wallet or chain' });
 
   const apiKeys: Record<string, string> = {
     eth: process.env.ETHERSCAN_API_KEY || '',
@@ -67,11 +61,11 @@ export default async function handler(
   try {
     if (chain === 'tron') {
       const tronRes = await fetch(
-        `https://apilist.tronscan.org/api/transaction?sort=-timestamp&count=true&limit=10&start=0&address=${wallet}`
+        `${baseUrls.tron}?sort=-timestamp&count=true&limit=50&start=0&address=${wallet}`
       );
       const data = await tronRes.json();
 
-      const transactions = data.data.slice(0, 10).map((tx: any) => ({
+      const transactions = data.data.slice(0, 50).map((tx: any) => ({
         date: tx.block_timestamp?.split(' ')[0],
         transactionId: tx.hash,
         amount: tx.amount,
@@ -89,20 +83,28 @@ export default async function handler(
       });
     }
 
-    const txUrl = `${baseUrls[chain]}?module=account&action=tokentx&address=${wallet}&startblock=0&endblock=99999999&sort=desc&apikey=${apiKeys[chain]}`;
-    const txResponse = await fetch(txUrl);
-    const txData = await txResponse.json();
+    const url = `${baseUrls[chain]}?module=account&action=tokentx&address=${wallet}&startblock=0&endblock=99999999&sort=desc&apikey=${apiKeys[chain]}`;
+    const response = await fetch(url);
+    const data = await response.json();
 
-    if (txData.status !== '1') {
-      return res.status(500).json({ error: 'Scan failed', message: txData.message });
+    if (data.status !== '1') {
+      return res.status(500).json({ error: 'Scan failed', message: data.message });
     }
 
-    const topTransfers = txData.result.slice(0, 10);
-    const transfers = [];
+    const transfers: {
+      date: string;
+      transactionId: string;
+      amount: string;
+      token: string;
+      symbol: string;
+      risk_flags: Record<string, string>;
+      riskScore: number;
+    }[] = [];
+
+    const topTransfers = data.result.slice(0, 100);
 
     for (const tx of topTransfers) {
       const contract = tx.contractAddress?.toLowerCase();
-
       const riskRes = await fetch(
         `https://api.gopluslabs.io/api/v1/token_security/1?contract_addresses=${contract}`
       );
@@ -129,23 +131,29 @@ export default async function handler(
       acc[tx.symbol] = (acc[tx.symbol] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
+
     const mostActive = Object.entries(topToken).sort((a, b) => b[1] - a[1])[0][0];
 
-    // ✅ Send Telegram alert
-    await fetch(`https://api.telegram.org/bot${process.env.VITE_TELEGRAM_BOT_TOKEN}/sendMessage`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: process.env.VITE_TELEGRAM_CHAT_ID,
-        text: `🧠 Deep Scan Completed\nWallet: ${wallet}\nChain: ${chain.toUpperCase()}\nRisk Score: ${averageScore}/100\nTop Token: ${mostActive}\nTX Count: ${transfers.length}`,
-      }),
-    });
+    // ✅ Telegram Alert
+    const botToken = process.env.VITE_TELEGRAM_BOT_TOKEN;
+    const chatId = process.env.VITE_TELEGRAM_CHAT_ID;
+
+    if (botToken && chatId) {
+      await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: `🔎 DeepScan Report\nWallet: ${wallet}\nChain: ${chain.toUpperCase()}\nTop Token: ${mostActive}\nTx Count: ${transfers.length}\nRisk Score: ${averageScore}/100`,
+        }),
+      });
+    }
 
     return res.status(200).json({
       address: wallet,
       chain: chain.toUpperCase(),
       riskScore: `${averageScore}/100`,
-      transactions: transfers,
+      transactions: transfers.slice(0, 100),
     });
   } catch (err: any) {
     console.error('[DeepScan Error]', err);
