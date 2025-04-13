@@ -2,7 +2,8 @@
 import './globals.css';
 import { WagmiConfig } from 'wagmi';
 import wagmiConfig from '@/lib/wagmiClient';
-import ClientOnly from '@/components/ClientOnly';
+import { ThemeProvider } from 'next-themes';
+import { Toaster } from 'react-hot-toast';
 import Navbar from '@/components/Navbar';
 
 export const metadata = {
@@ -12,13 +13,22 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className="bg-black text-white min-h-screen">
         <WagmiConfig config={wagmiConfig}>
-          <ClientOnly>
+          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={true}>
             <Navbar />
             <main className="pt-20 px-4">{children}</main>
-          </ClientOnly>
+            <Toaster
+              position="top-right"
+              toastOptions={{
+                style: {
+                  background: '#333',
+                  color: '#fff',
+                },
+              }}
+            />
+          </ThemeProvider>
         </WagmiConfig>
       </body>
     </html>
