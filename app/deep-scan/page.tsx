@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
+import { generatePDF } from '@/utils/generatePDF';
 
 const fees = {
   eth: 1.5,
@@ -24,6 +26,7 @@ export default function DeepScanPage() {
   const [error, setError] = useState('');
   const [showPayment, setShowPayment] = useState(false);
   const [showJSON, setShowJSON] = useState(false);
+  const router = useRouter();
 
   const isValidWallet = (addr: string) =>
     /^0x[a-fA-F0-9]{40}$/.test(addr) || /^T[a-zA-Z0-9]{33,34}$/.test(addr);
@@ -61,8 +64,8 @@ export default function DeepScanPage() {
       setResult(data);
       toast.success('Scan complete');
 
-      // ✅ Trigger Telegram alert
-      await fetch('/api/telegram-report', {
+      // Trigger Telegram alert
+      await fetch('/api/notify-telegram', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ result: data }),
@@ -79,7 +82,7 @@ export default function DeepScanPage() {
   const handleVerifyPayment = async () => {
     toast.loading('Verifying payment...');
     try {
-      const res = await fetch('/api/verify', {
+      const res = await fetch('/api/verify-payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ wallet, chain }),
@@ -88,37 +91,52 @@ export default function DeepScanPage() {
       const data = await res.json();
 
       if (!res.ok) throw new Error(data.error || 'Verification failed');
-
       setResult(data);
       setShowPayment(false);
       toast.success('Payment verified. Scan complete.');
 
-      // ✅ Trigger Telegram alert after payment
-      await fetch('/api/telegram-report', {
+      await fetch('/api/notify-telegram', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ result: data }),
       });
     } catch (err: any) {
+      toast.dismiss();
       toast.error(err.message || 'Verification failed');
     } finally {
       toast.dismiss();
     }
   };
 
-  const downloadPDF = async () => {
-    const res = await fetch('/api/generate-pdf', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(result),
+  const getTopToken = () => {
+    if (!result?.transactions?.length) return 'N/A';
+    const count: Record<string, number> = {};
+    result.transactions.forEach((tx: any) => {
+      count[tx.symbol] = (count[tx.symbol] || 0) + 1;
     });
+    return Object.entries(count).sort((a, b) => b[1] - a[1])[0][0];
+  };
 
-    const blob = await res.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'scan-report.pdf';
-    a.click();
+  const getTopRiskToken = () => {
+    if (!result?.transactions?.length) return 'N/A';
+    const sorted = [...result.transactions].sort((a, b) => b.riskScore - a.riskScore);
+    return `${sorted[0]?.symbol} (${sorted[0]?.riskScore}/100)` || 'N/A';
+  };
+
+  const getConfidence = () => {
+    const txCount = result?.transactions?.length || 0;
+    if (txCount >= 100) return 'High';
+    if (txCount >= 50) return 'Medium';
+    return 'Low';
+  };
+
+  const handleDownloadPDF = async () => {
+    const blob = await generatePDF(result);
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `scan-report-${result.address}.pdf`;
+    link.click();
   };
 
   return (
@@ -126,10 +144,12 @@ export default function DeepScanPage() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="min-h-screen py-12 px-4 bg-[var(--background)] text-[var(--foreground)] flex flex-col items-center"
+      className="min-h-screen py-12 px-4 bg-[var(--background)] text-[var(--foreground)] flex flex-col items-center transition-colors duration-300"
     >
       <div className="w-full max-w-xl bg-zinc-900 p-6 rounded-2xl shadow-xl">
-        <h1 className="text-3xl font-bold text-purple-400 text-center mb-6">Deep Wallet Scanner</h1>
+        <h1 className="text-3xl font-bold text-purple-400 text-center mb-6">
+          Deep Wallet Scanner
+        </h1>
 
         <select
           value={chain}
@@ -158,7 +178,7 @@ export default function DeepScanPage() {
         </button>
 
         <button
-          onClick={() => window.location.href = '/'}
+          onClick={() => router.push('/')}
           className="w-full bg-gray-700 hover:bg-gray-600 transition py-2 rounded text-sm"
         >
           ← Back to Homepage
@@ -167,7 +187,8 @@ export default function DeepScanPage() {
         {showPayment && (
           <div className="bg-red-800 text-white p-4 rounded mt-4 text-sm space-y-2">
             <p>💸 Please pay <strong>${fees[chain]}</strong> to:</p>
-            <p className="break-all text-purple-300">{paymentAddresses[chain]}</p>
+            <p className="break-all text-purple-300">{paymentAddresses[chain] || 'N/A'}</p>
+            <p>Once done, click below:</p>
             <button
               onClick={handleVerifyPayment}
               className="w-full bg-green-600 hover:bg-green-700 py-2 rounded mt-2"
@@ -185,53 +206,67 @@ export default function DeepScanPage() {
 
         {result && (
           <div className="mt-6 bg-zinc-800 p-4 rounded text-sm space-y-2">
-            <p className="text-green-400 font-semibold">✅ {result.chain} scan complete</p>
+            <p className="text-green-400 font-semibold">
+              ✅ {result.chain} scan complete
+            </p>
             <p className="text-purple-300">Risk Score: {result.riskScore}</p>
             <p className="text-gray-400 text-xs">Wallet: {result.address}</p>
 
-            <div className="flex gap-3 mt-2">
-              <button
-                onClick={() => setShowJSON(!showJSON)}
-                className="bg-gray-700 px-3 py-1 rounded text-xs"
-              >
-                {showJSON ? 'Hide JSON View' : 'Show Raw JSON'}
-              </button>
+            <button
+              onClick={() => setShowJSON((prev) => !prev)}
+              className="mt-3 text-xs bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded"
+            >
+              {showJSON ? 'Hide JSON View' : 'Show Raw JSON'}
+            </button>
 
-              <button
-                onClick={downloadPDF}
-                className="bg-green-700 px-3 py-1 rounded text-xs text-white"
-              >
-                📄 Download PDF Report
-              </button>
-            </div>
+            <button
+              onClick={handleDownloadPDF}
+              className="ml-2 text-xs bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-white"
+            >
+              📄 Download PDF Report
+            </button>
 
-            {showJSON && (
-              <pre className="text-xs bg-black text-green-400 p-3 rounded overflow-auto mt-3">
+            {showJSON ? (
+              <pre className="mt-4 text-green-300 bg-black rounded p-3 overflow-x-auto text-xs max-h-[400px]">
                 {JSON.stringify(result, null, 2)}
               </pre>
+            ) : (
+              <>
+                {(chain === 'eth' || chain === 'bsc') && (
+                  <>
+                    <hr className="border-gray-700 my-3" />
+                    <div className="space-y-2">
+                      <h2 className="text-white font-semibold text-base">Scan Summary</h2>
+                      <p>Top Token by Risk: <span className="text-green-400">{getTopRiskToken()}</span></p>
+                      <p>Most Active Token: <span className="text-green-400">{getTopToken()}</span></p>
+                      <p>Scan Confidence: <span className="text-green-400">{getConfidence()}</span></p>
+                      <p>{chain.toUpperCase()} scan includes {result.transactions?.length}+ transactions</p>
+                    </div>
+                    <div className="mt-4">
+                      <h2 className="text-white font-semibold text-base mb-1">AI Analysis</h2>
+                      <p className="text-sm text-gray-300">
+                        This wallet shows high-volume activity in {getTopToken()} with {result.riskScore.split('/')[0]} risk score detected.
+                        No suspicious token behavior found in the top {result.transactions?.length} transactions.
+                      </p>
+                    </div>
+                  </>
+                )}
+                <hr className="border-gray-700 my-3" />
+                <p className="text-gray-400 font-medium">Last Transactions:</p>
+                <ul className="list-disc pl-5 space-y-1">
+                  {result.transactions?.slice(0, 10).map((tx: any, idx: number) => (
+                    <li key={idx}>
+                      <span className="text-green-400">{tx.symbol}</span> — {tx.amount} on {tx.date}
+                      {chain !== 'tron' && (
+                        <span className="ml-2 text-xs text-white bg-green-700 px-2 py-0.5 rounded">
+                          {tx.riskScore >= 60 ? 'HIGH' : tx.riskScore > 0 ? 'MEDIUM' : 'SAFE'}
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </>
             )}
-
-            <hr className="border-gray-700 my-3" />
-
-            <p className="font-semibold text-sm text-white">Scan Summary</p>
-            <p className="text-gray-400">Top Token by Risk: <span className="text-green-400">{result.topToken || result.transactions?.[0]?.symbol || 'N/A'} ({result.riskScore})</span></p>
-            <p className="text-gray-400">Most Active Token: {result.transactions?.[0]?.symbol || 'N/A'}</p>
-            <p className="text-gray-400">Scan Confidence: <span className="text-yellow-300">Low</span></p>
-
-            <p className="mt-3 font-semibold text-white">AI Analysis</p>
-            <p className="text-sm text-gray-300">This wallet shows {result.transactions?.length}+ transactions. AI reviewed token behavior in top tokens and risk scores were generated accordingly.</p>
-
-            <div className="mt-4">
-              <p className="text-gray-400 font-medium">Last Transactions:</p>
-              <ul className="list-disc pl-5 space-y-1">
-                {result.transactions?.slice(0, 10).map((tx: any, idx: number) => (
-                  <li key={idx}>
-                    <span className="text-green-400">{tx.symbol}</span> — {tx.amount} on {tx.date}
-                    <span className="ml-2 px-2 bg-green-700 rounded text-xs text-white">SAFE</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
           </div>
         )}
       </div>
