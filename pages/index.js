@@ -1,38 +1,29 @@
-// pages/index.js
-import Head from 'next/head';
 import Link from 'next/link';
 
 export default function Home() {
   return (
-    <>
-      <Head>
-        <title>LostCryptoHelp 🚀</title>
-        <meta
-          name="description"
-          content="Scan your crypto wallet for scams, fake approvals, and token risks"
-        />
-      </Head>
-
-      <main className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-4">
-        <h1 className="text-4xl md:text-5xl font-bold mb-4 text-purple-500">
+    <main className="min-h-screen flex items-center justify-center bg-black px-4">
+      <div className="text-center space-y-6">
+        <h1 className="text-5xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
           LostCryptoHelp 🚀
         </h1>
-        <p className="text-gray-400 mb-8 text-center max-w-xl">
+        <p className="text-lg text-gray-400 max-w-xl mx-auto">
           Welcome to your crypto safety dashboard. Scan wallets. Detect scams. Stay protected.
         </p>
-        <div className="flex gap-4">
+
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-6">
           <Link href="/deep-scan">
-            <span className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl font-semibold transition cursor-pointer">
+            <button className="px-6 py-3 rounded-xl text-white bg-purple-600 hover:bg-purple-700 transition font-semibold shadow-md">
               Deep Scan
-            </span>
+            </button>
           </Link>
           <Link href="/connect">
-            <span className="bg-gray-700 hover:bg-gray-800 text-white px-6 py-3 rounded-xl font-semibold transition cursor-pointer">
+            <button className="px-6 py-3 rounded-xl bg-gray-800 text-white hover:bg-gray-700 transition font-semibold shadow-md">
               Connect Wallet
-            </span>
+            </button>
           </Link>
         </div>
-      </main>
-    </>
+      </div>
+    </main>
   );
 }
