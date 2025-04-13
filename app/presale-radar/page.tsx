@@ -32,22 +32,22 @@ export default function PresaleRadarPage() {
           {mockPresales.map((token, idx) => (
             <div
               key={idx}
-              className="bg-gray-900 p-6 rounded-xl border border-purple-600 flex justify-between items-center"
+              className="bg-gray-900 p-6 rounded-xl border border-purple-600 flex flex-col md:flex-row md:justify-between md:items-center shadow-md hover:shadow-purple-500/10 transition"
             >
-              <div>
+              <div className="mb-3 md:mb-0">
                 <h2 className="text-lg font-bold text-purple-400">{token.name}</h2>
                 <p className="text-sm text-gray-300">
-                  Chain: {token.chain} | Launch Date: {token.launch}
+                  Chain: {token.chain} | Launch: {token.launch}
                 </p>
                 <p className="text-sm text-gray-400">
-                  LP Locked: {token.lpLocked ? 'Yes' : 'No'} | Audit: {token.audit}
+                  LP Locked: {token.lpLocked ? '✅ Yes' : '❌ No'} | Audit: {token.audit}
                 </p>
               </div>
               <div>
                 {token.flagged ? (
-                  <span className="bg-red-600 text-white px-3 py-1 rounded-md text-sm">⚠️ Risky</span>
+                  <span className="bg-red-600 text-white px-3 py-1 rounded-md text-sm font-semibold">⚠️ Risky</span>
                 ) : (
-                  <span className="bg-green-600 text-white px-3 py-1 rounded-md text-sm">Safe</span>
+                  <span className="bg-green-600 text-white px-3 py-1 rounded-md text-sm font-semibold">✅ Safe</span>
                 )}
               </div>
             </div>
