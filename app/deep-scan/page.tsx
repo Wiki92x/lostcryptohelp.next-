@@ -61,7 +61,7 @@ export default function DeepScanPage() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-4 py-16"
+      className="min-h-screen py-12 px-4 bg-[var(--background)] text-[var(--foreground)] flex flex-col items-center transition-colors duration-300"
     >
       <div className="w-full max-w-xl bg-zinc-900 p-6 rounded-2xl shadow-xl">
         <h1 className="text-3xl font-bold text-purple-400 text-center mb-6">
