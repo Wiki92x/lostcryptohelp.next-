@@ -1,16 +1,16 @@
 'use client';
 import { ShieldCheck, Eye, Lock } from 'lucide-react';
 
-export default function AboutPage() {
+export default function AboutPageContent() {
   return (
-    <section className="min-h-screen bg-[var(--background)] text-[var(--foreground)] py-16 px-6 transition-colors">
+    <section className="min-h-screen bg-[var(--background)] text-[var(--foreground)] py-16 px-6 transition-colors duration-300">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl sm:text-4xl font-bold text-purple-500 flex items-center gap-2 mb-8">
           <ShieldCheck className="w-6 h-6" /> About LostCryptoHelp
         </h1>
 
         <div className="space-y-12">
-          {/* What We Do */}
+
           <div>
             <h2 className="text-xl sm:text-2xl font-semibold text-purple-500 flex items-center gap-2 mb-2">
               <Eye className="w-5 h-5" /> What We Do
@@ -25,7 +25,6 @@ export default function AboutPage() {
             </ul>
           </div>
 
-          {/* Why People Trust Us */}
           <div>
             <h2 className="text-xl sm:text-2xl font-semibold text-purple-500 flex items-center gap-2 mb-2">
               <Lock className="w-5 h-5" /> Why People Trust Us
@@ -34,12 +33,11 @@ export default function AboutPage() {
               <li>No PayPal, no Stripe, no KYC. Fully crypto-native</li>
               <li>Wallet-based access only — you control your data</li>
               <li>No storage of transactions or personal info</li>
-              <li>Scan logic is on-chain or self-hosted</li>
+              <li>Scan logic is on-chain or self-hosted (not 3rd-party)</li>
               <li>Opt-in only — Telegram alerts are encrypted</li>
             </ul>
           </div>
 
-          {/* Legal, Privacy & Transparency */}
           <div>
             <h2 className="text-xl sm:text-2xl font-semibold text-purple-500 mb-2">📜 Legal, Privacy & Transparency</h2>
             <ul className="list-disc list-inside text-sm sm:text-base space-y-1 text-gray-800 dark:text-gray-300">
@@ -49,6 +47,7 @@ export default function AboutPage() {
               <li>We believe in security through transparency</li>
             </ul>
           </div>
+
         </div>
       </div>
     </section>
