@@ -1,91 +1,82 @@
 'use client';
 
-import Head from 'next/head';
-import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { CheckCircle } from 'lucide-react';
+import { useState } from 'react';
+import { useAccount } from 'wagmi';
+import toast from 'react-hot-toast';
 
-export default function PricingPage() {
-  const plans = [
-    {
-      name: 'Ethereum Scan',
-      price: '$1.50',
-      features: ['ERC-20 Token Analysis', 'GoPlus Risk Flags', 'PDF + Telegram Report'],
-    },
-    {
-      name: 'BSC Scan',
-      price: '$0.50',
-      features: ['BEP-20 Token Scan', 'Smart Contract Health', 'PDF + Telegram Report'],
-    },
-    {
-      name: 'TRON Scan',
-      price: 'Free',
-      features: ['TRC-20 Token Insights', 'Basic Risk Review', 'PDF + Telegram Report'],
-    },
-  ];
+const plans = [
+  {
+    name: 'Basic',
+    price: '5',
+    chain: 'bsc',
+    features: ['Access TRON & BSC reports', 'Telegram alerts', 'PDF export'],
+  },
+  {
+    name: 'Pro',
+    price: '10',
+    chain: 'eth',
+    features: ['All Basic features', 'ETH + Cross-chain deep scans', 'Unlimited access'],
+  },
+];
+
+export default function MembershipPage() {
+  const { address } = useAccount();
+  const [txHash, setTxHash] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleVerify = async (chain: string) => {
+    if (!txHash || !address) return toast.error('Missing details');
+    setSubmitting(true);
+
+    try {
+      const res = await fetch(`/api/verify-membership`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chain, txHash, wallet: address }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      toast.success('Membership Activated!');
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
-    <>
-      <Head>
-        <title>Pricing | LostCryptoHelp</title>
-        <meta
-          name="description"
-          content="Choose your blockchain scan plan. LostCryptoHelp offers affordable Ethereum, BSC, and free TRON security scans."
-        />
-      </Head>
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="min-h-screen py-20 px-6 bg-black text-white"
-      >
-        <div className="max-w-5xl mx-auto text-center">
-          <h1 className="text-4xl font-bold text-purple-400 mb-4">Our Pricing Plans</h1>
-          <p className="text-gray-300 mb-12">
-            Choose your scan type. Pay only for the network you want to analyze. TRON is 100% free.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {plans.map((plan, index) => (
-            <motion.div
-              key={index}
-              whileHover={{ scale: 1.05 }}
-              transition={{ type: 'spring', stiffness: 300 }}
-              className="bg-zinc-900 p-6 rounded-xl shadow-lg border border-zinc-700"
+    <div className="min-h-screen px-6 py-16 bg-black text-white">
+      <h1 className="text-3xl font-bold text-center text-purple-400 mb-10">Membership Plans</h1>
+      <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+        {plans.map((plan) => (
+          <div key={plan.name} className="bg-zinc-900 border border-zinc-700 p-6 rounded-xl shadow-lg">
+            <h2 className="text-xl font-semibold text-purple-300">{plan.name} - ${plan.price}</h2>
+            <ul className="mt-4 space-y-2 text-sm text-gray-300">
+              {plan.features.map((f, i) => (
+                <li key={i}>• {f}</li>
+              ))}
+            </ul>
+            <p className="text-xs text-gray-500 mt-3">Send ${plan.price} in {plan.chain.toUpperCase()} to:</p>
+            <p className="text-sm text-green-400 break-all mb-4">
+              {plan.chain === 'eth' ? '0xa85f4DDE28941e41633b575D3a026A8B42887795' : '0xa85f4DDE28941e41633b575D3a026A8B42887795'}
+            </p>
+            <input
+              type="text"
+              placeholder="Your TX Hash"
+              value={txHash}
+              onChange={(e) => setTxHash(e.target.value)}
+              className="w-full p-2 rounded bg-zinc-800 mb-3"
+            />
+            <button
+              onClick={() => handleVerify(plan.chain)}
+              disabled={submitting}
+              className="w-full py-2 bg-purple-600 hover:bg-purple-700 rounded"
             >
-              <h2 className="text-2xl font-bold text-purple-300 mb-2">{plan.name}</h2>
-              <p className="text-3xl font-semibold text-green-400 mb-4">{plan.price}</p>
-              <ul className="text-sm text-gray-300 space-y-2 mb-6">
-                {plan.features.map((feature, i) => (
-                  <li key={i} className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-green-500" />
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-              <Link href="/deep-scan">
-                <motion.button
-                  whileTap={{ scale: 0.96 }}
-                  className="w-full py-2 bg-purple-600 hover:bg-purple-700 rounded font-medium transition"
-                >
-                  Start Scan
-                </motion.button>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
-
-        <div className="text-center mt-12">
-          <Link
-            href="/"
-            className="inline-block mt-6 text-sm text-purple-400 hover:underline"
-          >
-            ← Back to homepage
-          </Link>
-        </div>
-      </motion.div>
-    </>
+              {submitting ? 'Verifying...' : 'Activate Membership'}
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
