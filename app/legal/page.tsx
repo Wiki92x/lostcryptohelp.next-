@@ -1,44 +1,66 @@
-'use client';
 
+// pages/legalhub.tsx
+
+import Head from 'next/head';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 
 export default function LegalHub() {
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="min-h-screen py-20 px-6 bg-[var(--background)] text-[var(--foreground)]"
-    >
-      <div className="max-w-4xl mx-auto space-y-8 text-center">
-        <h1 className="text-4xl font-bold text-purple-500">Legal Center</h1>
-        <p className="text-gray-600 dark:text-gray-300 text-sm sm:text-base">
-          Stay informed about your rights, data, and responsibilities while using LostCryptoHelp.
+    <>
+      <Head>
+        <title>Legal Hub - LostCryptoHelp</title>
+        <meta name="description" content="Legal documents and disclaimers for LostCryptoHelp" />
+      </Head>
+
+      <div className="max-w-4xl mx-auto px-4 py-12 text-sm text-gray-300">
+        <h1 className="text-3xl font-bold text-white mb-6">Legal Hub</h1>
+
+        <p className="mb-6">
+          The following documents outline the legal framework, user responsibilities, and platform protections
+          in place for users of LostCryptoHelp. This hub is designed to ensure transparency and compliance with
+          global standards.
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-8">
-          <Link
-            href="/terms"
-            className="block p-6 rounded-xl bg-zinc-100 dark:bg-zinc-900 shadow hover:shadow-lg transition"
-          >
-            <h2 className="text-xl font-semibold text-purple-500 mb-2">📜 Terms of Service</h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Understand what’s allowed and what’s not when using our service.
+        <ul className="list-disc list-inside space-y-4">
+          <li>
+            <Link href="/terms" className="text-blue-400 hover:underline">
+              Terms of Service
+            </Link>
+            <p className="ml-4 text-gray-400">
+              Binding agreement outlining platform use, disclaimers, and user responsibilities.
             </p>
-          </Link>
+          </li>
 
-          <Link
-            href="/privacy"
-            className="block p-6 rounded-xl bg-zinc-100 dark:bg-zinc-900 shadow hover:shadow-lg transition"
-          >
-            <h2 className="text-xl font-semibold text-purple-500 mb-2">🔒 Privacy Policy</h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              See how we protect your wallet data and privacy. No tracking. No cookies.
+          <li>
+            <Link href="/privacy" className="text-blue-400 hover:underline">
+              Privacy Policy
+            </Link>
+            <p className="ml-4 text-gray-400">
+              Explanation of what data is collected, stored, and how we safeguard user privacy.
             </p>
-          </Link>
-        </div>
+          </li>
+
+          <li>
+            <Link href="/compliance" className="text-blue-400 hover:underline">
+              Global Compliance Notice
+            </Link>
+            <p className="ml-4 text-gray-400">
+              Important legal disclosures and compliance opt-outs for different countries.
+            </p>
+          </li>
+
+          <li>
+            <Link href="/disclaimer" className="text-blue-400 hover:underline">
+              AI & Risk Disclaimer
+            </Link>
+            <p className="ml-4 text-gray-400">
+              Clarifies the limitations of AI-based reports and wallet scan accuracy.
+            </p>
+          </li>
+        </ul>
+
+        <p className="mt-10 text-gray-400">Last updated: April 13, 2025</p>
       </div>
-    </motion.section>
+    </>
   );
 }
