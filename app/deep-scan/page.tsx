@@ -63,6 +63,13 @@ export default function DeepScanPage() {
       if (!res.ok) throw new Error(data.error || 'Scan failed');
       setResult(data);
       toast.success('Scan complete');
+
+      // Trigger Telegram alert
+      await fetch('/api/notify-telegram', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ result: data }),
+      });
     } catch (err: any) {
       setError(err.message || 'Something went wrong');
       toast.error(err.message || 'Scan failed');
@@ -87,6 +94,12 @@ export default function DeepScanPage() {
       setResult(data);
       setShowPayment(false);
       toast.success('Payment verified. Scan complete.');
+
+      await fetch('/api/notify-telegram', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ result: data }),
+      });
     } catch (err: any) {
       toast.dismiss();
       toast.error(err.message || 'Verification failed');
