@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const path = usePathname();
+  const cleanPath = path.replace('/dashboard', '') || '/overview';
 
   return (
     <motion.section
@@ -19,12 +20,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </h1>
 
         <div className="bg-zinc-900 border border-zinc-700 rounded-xl shadow-lg p-6">
-          {/* Optional: breadcrumb or subtitle */}
-          <p className="text-sm text-gray-400 mb-4">
-            Welcome to your control panel. Page: <span className="text-purple-300">{path}</span>
-          </p>
+          <div className="text-sm text-gray-400 mb-4">
+            Current Page: <span className="text-purple-300 font-medium">{cleanPath}</span>
+          </div>
 
-          {/* Children (actual content pages) */}
+          {/* Content injected here */}
           {children}
         </div>
       </div>
