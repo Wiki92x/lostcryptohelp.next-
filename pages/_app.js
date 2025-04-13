@@ -1,12 +1,13 @@
-// pages/_app.js or _app.tsx
+// pages/_app.js
 import '@/styles/globals.css';
 import { useEffect, useState } from 'react';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from 'react-hot-toast';
 import Head from 'next/head';
 import { WagmiConfig } from 'wagmi';
-import wagmiConfig from '@/lib/wagmiClient'; // ✅ FIXED
-
+import wagmiConfig from '@/lib/wagmiClient';
+import Navbar from '@/components/Navbar'; // ✅
+import Footer from '@/components/Footer'; // ✅
 
 export default function MyApp({ Component, pageProps }) {
   const [mounted, setMounted] = useState(false);
@@ -15,7 +16,6 @@ export default function MyApp({ Component, pageProps }) {
     setMounted(true);
   }, []);
 
-  // Prevent hydration mismatch
   if (!mounted || !wagmiConfig) return null;
 
   return (
@@ -30,6 +30,12 @@ export default function MyApp({ Component, pageProps }) {
           <link rel="icon" href="/favicon.ico" />
         </Head>
 
+        <Navbar /> {/* ✅ Injected */}
+        <main className="min-h-screen bg-black text-white">
+          <Component {...pageProps} />
+        </main>
+        <Footer /> {/* ✅ Injected */}
+
         <Toaster
           position="top-right"
           toastOptions={{
@@ -39,8 +45,6 @@ export default function MyApp({ Component, pageProps }) {
             },
           }}
         />
-
-        <Component {...pageProps} />
       </ThemeProvider>
     </WagmiConfig>
   );
