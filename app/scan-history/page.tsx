@@ -1,44 +1,79 @@
-// ✅ app/scan-history/page.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
+import { generatePDF } from '@/utils/generatePDF';
+import { motion } from 'framer-motion';
 
-export default function ScanHistory() {
-  const [scans, setScans] = useState([
-    { wallet: '0xabc123...', score: 5, status: 'Scam', time: '2025-04-03 10:12' },
-    { wallet: '0x456def...', score: 2, status: 'Safe', time: '2025-04-03 09:47' },
-    { wallet: 'bnb1xyz...', score: 4, status: 'Warning', time: '2025-04-03 09:15' },
-  ]);
+interface Scan {
+  address: string;
+  chain: string;
+  riskScore: string;
+  timestamp: string;
+  transactions: any[];
+}
+
+export default function ScanHistoryPage() {
+  const [history, setHistory] = useState<Scan[]>([]);
 
   useEffect(() => {
-    // Future: Fetch real data here
+    const raw = localStorage.getItem('scanHistory');
+    if (raw) {
+      setHistory(JSON.parse(raw));
+    }
   }, []);
 
+  const handleDownload = (scan: Scan) => {
+    generatePDF(scan);
+  };
+
   return (
-    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] px-6 py-12 transition-colors">
-      <h1 className="text-3xl font-bold mb-6 text-purple-400 text-center">📜 Scan History</h1>
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-zinc-900 rounded-md shadow-md text-sm">
-          <thead>
-            <tr className="text-left border-b border-gray-700">
-              <th className="p-3">Wallet</th>
-              <th className="p-3">Risk Score</th>
-              <th className="p-3">Status</th>
-              <th className="p-3">Scanned At</th>
-            </tr>
-          </thead>
-          <tbody>
-            {scans.map((scan, index) => (
-              <tr key={index} className="hover:bg-zinc-800">
-                <td className="p-3">{scan.wallet}</td>
-                <td className="p-3">{scan.score}</td>
-                <td className="p-3">{scan.status}</td>
-                <td className="p-3">{scan.time}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="min-h-screen px-6 py-16 bg-black text-white"
+    >
+      <div className="max-w-5xl mx-auto">
+        <h1 className="text-3xl font-bold text-purple-400 mb-8">🔁 Scan History</h1>
+
+        {history.length === 0 ? (
+          <p className="text-gray-500">No scans found yet.</p>
+        ) : (
+          <div className="overflow-x-auto rounded-lg border border-zinc-700">
+            <table className="min-w-full text-sm text-left">
+              <thead className="bg-zinc-800 text-purple-300">
+                <tr>
+                  <th className="p-3">Wallet</th>
+                  <th className="p-3">Chain</th>
+                  <th className="p-3">Score</th>
+                  <th className="p-3">Time</th>
+                  <th className="p-3">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-zinc-900">
+                {history.map((scan, i) => (
+                  <tr key={i} className="border-t border-zinc-800">
+                    <td className="p-3 font-mono">{scan.address.slice(0, 10)}...</td>
+                    <td className="p-3">{scan.chain}</td>
+                    <td className={`p-3 font-bold ${parseInt(scan.riskScore) >= 70 ? 'text-red-500' : 'text-green-400'}`}>
+                      {scan.riskScore}
+                    </td>
+                    <td className="p-3 text-gray-400">{scan.timestamp}</td>
+                    <td className="p-3">
+                      <button
+                        onClick={() => handleDownload(scan)}
+                        className="bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm"
+                      >
+                        📄 PDF
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
-    </div>
+    </motion.div>
   );
 }
