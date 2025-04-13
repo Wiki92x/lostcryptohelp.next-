@@ -1,11 +1,13 @@
-// pages/_app.js
+// ✅ pages/_app.js
 import '@/styles/globals.css';
-import { useEffect, useState } from 'react';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 import { ThemeProvider } from 'next-themes';
-import { Toaster } from 'react-hot-toast';
-import Head from 'next/head';
+import { useEffect, useState } from 'react';
 import { WagmiConfig } from 'wagmi';
 import wagmiConfig from '@/lib/wagmiClient';
+import Head from 'next/head';
+import { Toaster } from 'react-hot-toast';
 
 export default function MyApp({ Component, pageProps }) {
   const [mounted, setMounted] = useState(false);
@@ -14,8 +16,8 @@ export default function MyApp({ Component, pageProps }) {
     setMounted(true);
   }, []);
 
-  // 🧪 Prevent hydration mismatch for theme
-  if (!mounted) return null;
+  // 🧪 Prevent hydration mismatch for theme toggle
+  if (!mounted || !wagmiConfig) return null;
 
   return (
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={true}>
@@ -24,10 +26,14 @@ export default function MyApp({ Component, pageProps }) {
           <title>LostCryptoHelp</title>
           <meta
             name="description"
-            content="Scan your crypto wallet for scam tokens, fake approvals, phishing, and contract risks."
+            content="Scan your crypto wallet for scam tokens, fake approvals, phishing, and contract risks. Ethereum, BSC, TRON supported."
           />
           <link rel="icon" href="/favicon.ico" />
         </Head>
+
+        <Navbar />
+        <Component {...pageProps} />
+        <Footer />
 
         <Toaster
           position="top-right"
@@ -38,8 +44,6 @@ export default function MyApp({ Component, pageProps }) {
             },
           }}
         />
-
-        <Component {...pageProps} />
       </WagmiConfig>
     </ThemeProvider>
   );
