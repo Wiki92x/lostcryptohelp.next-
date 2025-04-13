@@ -24,16 +24,23 @@ function calculateRiskScore(riskFlags: Record<string, string>): number {
   return Math.min(total, 100);
 }
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
 
   const { wallet, chain } = req.body;
-  if (!wallet || !chain) return res.status(400).json({ error: 'Missing wallet or chain' });
+  if (!wallet || !chain) {
+    return res.status(400).json({ error: 'Missing wallet or chain' });
+  }
 
   const apiKeys: Record<string, string> = {
     eth: process.env.ETHERSCAN_API_KEY || '',
     bsc: process.env.BSCSCAN_API_KEY || '',
-    tron: '', // Not needed for TRON
+    tron: '',
   };
 
   const baseUrls: Record<string, string> = {
@@ -60,7 +67,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     if (chain === 'tron') {
       const tronRes = await fetch(
-        `${baseUrls.tron}?sort=-timestamp&count=true&limit=10&start=0&address=${wallet}`
+        `https://apilist.tronscan.org/api/transaction?sort=-timestamp&count=true&limit=10&start=0&address=${wallet}`
       );
       const data = await tronRes.json();
 
@@ -82,20 +89,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    const url = `${baseUrls[chain]}?module=account&action=tokentx&address=${wallet}&startblock=0&endblock=99999999&sort=desc&apikey=${apiKeys[chain]}`;
-    const response = await fetch(url);
-    const data = await response.json();
+    const txUrl = `${baseUrls[chain]}?module=account&action=tokentx&address=${wallet}&startblock=0&endblock=99999999&sort=desc&apikey=${apiKeys[chain]}`;
+    const txResponse = await fetch(txUrl);
+    const txData = await txResponse.json();
 
-    if (data.status !== '1') {
-      return res.status(500).json({ error: 'Scan failed', message: data.message });
+    if (txData.status !== '1') {
+      return res.status(500).json({ error: 'Scan failed', message: txData.message });
     }
 
-    const topTransfers = data.result.slice(0, 10);
+    const topTransfers = txData.result.slice(0, 10);
     const transfers = [];
 
     for (const tx of topTransfers) {
       const contract = tx.contractAddress?.toLowerCase();
-      const riskRes = await fetch(`https://api.gopluslabs.io/api/v1/token_security/1?contract_addresses=${contract}`);
+
+      const riskRes = await fetch(
+        `https://api.gopluslabs.io/api/v1/token_security/1?contract_addresses=${contract}`
+      );
       const riskData = await riskRes.json();
       const riskFlags = riskData.result?.[contract] || {};
       const tokenRiskScore = calculateRiskScore(riskFlags);
@@ -121,17 +131,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }, {} as Record<string, number>);
     const mostActive = Object.entries(topToken).sort((a, b) => b[1] - a[1])[0][0];
 
-    // ✅ Telegram alert
+    // ✅ Send Telegram alert
     await fetch(`https://api.telegram.org/bot${process.env.VITE_TELEGRAM_BOT_TOKEN}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         chat_id: process.env.VITE_TELEGRAM_CHAT_ID,
-        text: `🧠 Deep Scan Completed\nWallet: ${wallet}\nChain: ${chain.toUpperCase()}\nRisk Score: ${averageScore}/100\nTop Token: ${mostActive}\nTX Count: ${transfers.length}`
+        text: `🧠 Deep Scan Completed\nWallet: ${wallet}\nChain: ${chain.toUpperCase()}\nRisk Score: ${averageScore}/100\nTop Token: ${mostActive}\nTX Count: ${transfers.length}`,
       }),
     });
 
-    res.status(200).json({
+    return res.status(200).json({
       address: wallet,
       chain: chain.toUpperCase(),
       riskScore: `${averageScore}/100`,
@@ -139,6 +149,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   } catch (err: any) {
     console.error('[DeepScan Error]', err);
-    res.status(500).json({ error: 'Internal Server Error', details: err.message });
+    return res.status(500).json({ error: 'Internal Server Error', details: err.message });
   }
 }
