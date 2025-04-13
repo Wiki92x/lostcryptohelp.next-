@@ -3,11 +3,26 @@
 
 import { createConfig, configureChains } from 'wagmi';
 import { mainnet, polygon, bsc } from 'wagmi/chains';
-import { publicProvider } from 'wagmi/providers/public';
+import { jsonRpcProvider } from 'wagmi/providers/jsonRpc';
 
 const { chains, publicClient } = configureChains(
   [mainnet, polygon, bsc],
-  [publicProvider()]
+  [
+    jsonRpcProvider({
+      rpc: (chain) => {
+        if (chain.id === mainnet.id) {
+          return { http: `https://eth.llamarpc.com` };
+        }
+        if (chain.id === polygon.id) {
+          return { http: `https://polygon-rpc.com` };
+        }
+        if (chain.id === bsc.id) {
+          return { http: `https://bsc-dataseed.binance.org` };
+        }
+        return null;
+      },
+    }),
+  ]
 );
 
 const wagmiConfig = createConfig({
