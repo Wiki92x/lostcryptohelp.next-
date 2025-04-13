@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, ChangeEvent, FormEvent } from 'react';
+import toast from 'react-hot-toast';
+import { Loader2, Send } from 'lucide-react';
 
 interface ReportFormProps {
   txHash?: string;
@@ -9,13 +11,7 @@ interface ReportFormProps {
 }
 
 export default function ReportForm({ txHash, chain, method }: ReportFormProps) {
-  const [formData, setFormData] = useState({
-    name: '',
-    wallet: '',
-    message: '',
-  });
-
-  const [status, setStatus] = useState('');
+  const [formData, setFormData] = useState({ name: '', wallet: '', message: '' });
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -25,31 +21,25 @@ export default function ReportForm({ txHash, chain, method }: ReportFormProps) {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setStatus('');
+    toast.dismiss();
 
     try {
       const res = await fetch('/api/report', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          txHash,
-          chain,
-          method,
-        }),
+        body: JSON.stringify({ ...formData, txHash, chain, method }),
       });
 
       const data = await res.json();
 
       if (data.success) {
-        setStatus('✅ Report submitted successfully.');
+        toast.success('✅ Report submitted successfully.');
         setFormData({ name: '', wallet: '', message: '' });
       } else {
-        setStatus('❌ Failed to send report.');
+        toast.error('❌ Failed to send report.');
       }
     } catch (err) {
-      console.error(err);
-      setStatus('❌ Error submitting report.');
+      toast.error('❌ Error submitting report.');
     } finally {
       setLoading(false);
     }
@@ -58,66 +48,62 @@ export default function ReportForm({ txHash, chain, method }: ReportFormProps) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="w-full max-w-2xl mx-auto space-y-6 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-2xl p-6 shadow-lg"
+      className="bg-zinc-900/80 border border-zinc-700 rounded-xl p-6 shadow-md backdrop-blur"
     >
-      {/* Name */}
-      <div>
-        <label className="block text-sm font-medium mb-1">Name</label>
+      <div className="mb-4">
+        <label className="block mb-1 text-sm text-gray-300 font-medium">Name</label>
         <input
-          type="text"
           name="name"
           value={formData.name}
           onChange={handleChange}
-          className="w-full px-4 py-2 rounded-lg border border-purple-400 dark:border-purple-600 bg-white dark:bg-gray-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+          className="w-full px-3 py-2 border border-purple-500 bg-black rounded text-white focus:outline-none focus:ring-1 focus:ring-purple-500"
+          placeholder="Anonymous or Nickname"
           required
         />
       </div>
 
-      {/* Wallet */}
-      <div>
-        <label className="block text-sm font-medium mb-1">Wallet Address</label>
+      <div className="mb-4">
+        <label className="block mb-1 text-sm text-gray-300 font-medium">Wallet Address</label>
         <input
-          type="text"
           name="wallet"
           value={formData.wallet}
           onChange={handleChange}
-          className="w-full px-4 py-2 rounded-lg border border-purple-400 dark:border-purple-600 bg-white dark:bg-gray-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+          className="w-full px-3 py-2 border border-purple-500 bg-black rounded text-white focus:outline-none focus:ring-1 focus:ring-purple-500"
+          placeholder="0x123... or TRON address"
           required
         />
       </div>
 
-      {/* Message */}
-      <div>
-        <label className="block text-sm font-medium mb-1">What happened?</label>
+      <div className="mb-4">
+        <label className="block mb-1 text-sm text-gray-300 font-medium">What happened?</label>
         <textarea
           name="message"
           value={formData.message}
           onChange={handleChange}
           rows={5}
-          className="w-full px-4 py-2 rounded-lg border border-purple-400 dark:border-purple-600 bg-white dark:bg-gray-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+          className="w-full px-3 py-2 border border-purple-500 bg-black rounded text-white focus:outline-none focus:ring-1 focus:ring-purple-500"
+          placeholder="Explain what happened in detail..."
           required
         />
       </div>
 
-      {/* Submit Button */}
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-3 rounded-xl bg-purple-700 hover:bg-purple-800 transition text-white font-semibold tracking-wide disabled:opacity-50"
+        className="w-full flex justify-center items-center gap-2 py-2 px-4 bg-purple-600 hover:bg-purple-700 rounded text-white font-medium transition disabled:opacity-50"
       >
-        {loading ? 'Submitting...' : 'Submit Report'}
+        {loading ? (
+          <>
+            <Loader2 className="w-4 h-4 animate-spin" />
+            Submitting...
+          </>
+        ) : (
+          <>
+            <Send className="w-4 h-4" />
+            Submit Report
+          </>
+        )}
       </button>
-
-      {/* Status Message */}
-      {status && (
-        <p
-          className={`mt-4 text-sm font-medium ${
-            status.includes('✅') ? 'text-green-400' : 'text-red-400'
-          }`}
-        >
-          {status}
-        </p>
-      )}
     </form>
   );
 }
