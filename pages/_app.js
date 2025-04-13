@@ -5,7 +5,8 @@ import { ThemeProvider } from 'next-themes';
 import { Toaster } from 'react-hot-toast';
 import Head from 'next/head';
 import { WagmiConfig } from 'wagmi';
-import wagmiConfig from '@/lib/wagmi';
+import wagmiConfig from '@/lib/wagmiClient'; // ✅ FIXED
+
 
 export default function MyApp({ Component, pageProps }) {
   const [mounted, setMounted] = useState(false);
