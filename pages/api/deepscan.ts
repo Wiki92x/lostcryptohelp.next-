@@ -1,3 +1,4 @@
+// ✅ pages/api/deepscan.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import fetch from 'node-fetch';
 
@@ -25,14 +26,10 @@ function calculateRiskScore(riskFlags: Record<string, string>): number {
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const { wallet, chain } = req.body;
-  if (!wallet || !chain) {
-    return res.status(400).json({ error: 'Missing wallet or chain' });
-  }
+  if (!wallet || !chain) return res.status(400).json({ error: 'Missing wallet or chain' });
 
   const apiKeys = {
     eth: process.env.ETHERSCAN_API_KEY || '',
@@ -63,9 +60,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     if (chain === 'tron') {
-      const tronRes = await fetch(
-        \`\${baseUrls.tron}?sort=-timestamp&count=true&limit=10&start=0&address=\${wallet}\`
-      );
+      const tronRes = await fetch(`${baseUrls.tron}?sort=-timestamp&count=true&limit=10&start=0&address=${wallet}`);
       const data = await tronRes.json();
       const transactions = data.data.slice(0, 10).map((tx: any) => ({
         date: tx.block_timestamp?.split(' ')[0],
@@ -84,7 +79,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    const url = \`\${baseUrls[chain]}?module=account&action=tokentx&address=\${wallet}&startblock=0&endblock=99999999&sort=desc&apikey=\${apiKeys[chain]}\`;
+    const url = `${baseUrls[chain]}?module=account&action=tokentx&address=${wallet}&startblock=0&endblock=99999999&sort=desc&apikey=${apiKeys[chain]}`;
     const response = await fetch(url);
     const data = await response.json();
 
@@ -97,9 +92,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     for (const tx of topTransfers) {
       const contract = tx.contractAddress?.toLowerCase();
-      const riskRes = await fetch(
-        \`https://api.gopluslabs.io/api/v1/token_security/1?contract_addresses=\${contract}\`
-      );
+      const riskRes = await fetch(`https://api.gopluslabs.io/api/v1/token_security/1?contract_addresses=${contract}`);
       const riskData = await riskRes.json();
       const riskFlags = riskData.result?.[contract] || {};
       const tokenRiskScore = calculateRiskScore(riskFlags);
@@ -128,12 +121,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
       const botToken = process.env.VITE_TELEGRAM_BOT_TOKEN!;
       const chatId = process.env.VITE_TELEGRAM_CHAT_ID!;
-      await fetch(\`https://api.telegram.org/bot\${botToken}/sendMessage\`, {
+      await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           chat_id: chatId,
-          text: \`📡 Deep Scan Completed\nWallet: \${wallet}\nChain: \${chain.toUpperCase()}\nRisk Score: \${averageScore}/100\nTop Token: \${mostActive}\nTransactions: \${transfers.length}\`,
+          text: `📡 Deep Scan Completed\nWallet: ${wallet}\nChain: ${chain.toUpperCase()}\nRisk Score: ${averageScore}/100\nTop Token: ${mostActive}\nTransactions: ${transfers.length}`,
         }),
       });
     } catch (telegramError) {
@@ -143,7 +136,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(200).json({
       address: wallet,
       chain: chain.toUpperCase(),
-      riskScore: \`\${averageScore}/100\`,
+      riskScore: `${averageScore}/100`,
       transactions: transfers,
     });
   } catch (err: any) {
