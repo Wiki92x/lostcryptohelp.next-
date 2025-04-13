@@ -1,11 +1,10 @@
-// ✅ pages/api/deepscan.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import fetch from 'node-fetch';
 
 const WHITELIST = [
   '0x742d35Cc6634C0532925a3b844Bc454e4438f44e', // ETH test
   '0x0d8775f648430679a709e98d2b0cb6250d2887ef', // BSC test
-  'TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf'           // TRON test
+  'TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf'          // TRON test
 ];
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -22,7 +21,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const apiKeys: Record<string, string> = {
     eth: process.env.ETHERSCAN_API_KEY || '',
     bsc: process.env.BSCSCAN_API_KEY || '',
-    tron: '' // not used for TRON
+    tron: '' // Not needed for TRON
   };
 
   const baseUrls: Record<string, string> = {
@@ -34,7 +33,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const isWhitelisted = WHITELIST.includes(wallet);
   const requiresPayment = chain !== 'tron' && !isWhitelisted;
 
-  // ⚠️ Payment gate for non-whitelisted ETH/BSC
   if (requiresPayment) {
     return res.status(402).json({
       error: 'Payment required for scan',
@@ -48,6 +46,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    // TRON SCAN LOGIC
     if (chain === 'tron') {
       const tronRes = await fetch(`${baseUrls.tron}?sort=-timestamp&count=true&limit=10&start=0&address=${wallet}`);
       const data = await tronRes.json();
@@ -55,10 +54,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const transactions = data.data.slice(0, 10).map((tx: any) => ({
         date: tx.block_timestamp?.split(' ')[0],
         transactionId: tx.hash,
-        amount: tx.amount,
+        amount: tx.amount || 'N/A',
         token: tx.tokenInfo?.tokenName || 'Unknown',
         symbol: tx.tokenInfo?.tokenSymbol || '',
-        risk_flags: {} // 🔒 Upgrade needed for full TRON flags
+        risk_flags: {} // 🔐 Risk detection not available for TRON yet
       }));
 
       return res.status(200).json({
@@ -69,7 +68,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    // ETH & BSC logic
+    // ETH / BSC LOGIC
     const url = `${baseUrls[chain]}?module=account&action=tokentx&address=${wallet}&startblock=0&endblock=99999999&sort=desc&apikey=${apiKeys[chain]}`;
     const response = await fetch(url);
     const data = await response.json();
@@ -79,10 +78,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const topTransfers = data.result.slice(0, 10);
-    const transfers: any[] = [];
+    const transfers = [];
 
     for (const tx of topTransfers) {
       const contract = tx.contractAddress?.toLowerCase();
+
+      // GoPlus API - Token Security Flags
       const riskRes = await fetch(`https://api.gopluslabs.io/api/v1/token_security/1?contract_addresses=${contract}`);
       const riskData = await riskRes.json();
       const riskFlags = riskData.result?.[contract] || {};
@@ -93,14 +94,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         amount: (parseFloat(tx.value) / 10 ** parseInt(tx.tokenDecimal)).toFixed(4),
         token: tx.tokenName,
         symbol: tx.tokenSymbol,
-        risk_flags: riskFlags,
+        risk_flags: riskFlags
       });
     }
 
     return res.status(200).json({
       address: wallet,
       chain: chain.toUpperCase(),
-      riskScore: '100/100 (High Risk)', // placeholder, enhance later
+      riskScore: '100/100 (High Risk)', // Placeholder
       transactions: transfers
     });
   } catch (err: any) {
