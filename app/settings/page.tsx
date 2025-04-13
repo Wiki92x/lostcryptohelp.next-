@@ -6,6 +6,13 @@ import { useAccount } from 'wagmi';
 export default function SettingsPage() {
   const { address, isConnected } = useAccount();
   const [alertsEnabled, setAlertsEnabled] = useState(true);
+  const [statusMsg, setStatusMsg] = useState('');
+
+  const handleToggle = () => {
+    setAlertsEnabled((prev) => !prev);
+    setStatusMsg(`Telegram alerts ${!alertsEnabled ? 'enabled' : 'disabled'}`);
+    setTimeout(() => setStatusMsg(''), 3000);
+  };
 
   return (
     <div className="min-h-screen bg-black text-white px-6 py-20">
@@ -17,7 +24,7 @@ export default function SettingsPage() {
           <div>
             <h2 className="text-lg font-semibold text-purple-400 mb-2">Connected Wallet</h2>
             <p className="text-sm text-gray-400 break-all">
-              {isConnected ? address : 'Wallet not connected'}
+              {isConnected ? address : '🔌 Wallet not connected'}
             </p>
           </div>
 
@@ -27,14 +34,18 @@ export default function SettingsPage() {
             <div className="flex items-center justify-between bg-gray-800 p-4 rounded-md">
               <p className="text-sm text-gray-300">Enable real-time alerts via Telegram</p>
               <button
-                onClick={() => setAlertsEnabled(!alertsEnabled)}
+                onClick={handleToggle}
+                disabled={!isConnected}
                 className={`px-4 py-2 rounded-md text-sm font-semibold transition ${
                   alertsEnabled ? 'bg-green-600' : 'bg-red-600'
-                }`}
+                } ${!isConnected ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 {alertsEnabled ? 'Enabled' : 'Disabled'}
               </button>
             </div>
+            {statusMsg && (
+              <p className="text-xs text-purple-400 mt-2">{statusMsg}</p>
+            )}
           </div>
 
           {/* Placeholder for Future Settings */}
