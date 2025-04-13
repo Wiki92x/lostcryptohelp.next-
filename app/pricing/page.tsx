@@ -1,3 +1,4 @@
+// app/pricing/page.tsx
 'use client';
 
 const plans = [
