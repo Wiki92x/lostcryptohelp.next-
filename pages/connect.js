@@ -1,57 +1,54 @@
-// pages/connect.js
+'use client';
 
+import { motion } from 'framer-motion';
 import Head from 'next/head';
-import { useAccount, useConnect, useDisconnect } from 'wagmi';
-import { InjectedConnector } from 'wagmi/connectors/injected';
-import Link from 'next/link';
+import { useRouter } from 'next/router';
+import { Rocket, ArrowLeft, Wallet } from 'lucide-react';
 
 export default function ConnectPage() {
-  const { address, isConnected } = useAccount();
-  const { connect, isLoading } = useConnect({
-    connector: new InjectedConnector(),
-  });
-  const { disconnect } = useDisconnect();
+  const router = useRouter();
 
   return (
     <>
       <Head>
         <title>Connect Wallet | LostCryptoHelp</title>
+        <meta
+          name="description"
+          content="Connect your wallet to unlock scan tools, detect scams, and access Web3 protection."
+        />
       </Head>
-      <div className="min-h-screen bg-black text-white flex flex-col justify-center items-center px-4">
-        <h1 className="text-4xl md:text-5xl font-bold text-purple-400 mb-4">
-          Connect Your Wallet 🚀
-        </h1>
-        <p className="text-gray-400 text-center max-w-md mb-8">
-          Connect to your wallet to unlock deep scan, scam protection and web3 tools.
-        </p>
 
-        {isConnected ? (
-          <div className="flex flex-col items-center space-y-4">
-            <div className="bg-gray-800 text-green-400 px-4 py-2 rounded-full text-sm">
-              Connected: {address.slice(0, 6)}...{address.slice(-4)}
-            </div>
-            <button
-              onClick={disconnect}
-              className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded transition"
-            >
-              Disconnect
-            </button>
-          </div>
-        ) : (
-          <button
-            onClick={() => connect()}
-            disabled={isLoading}
-            className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded transition"
+      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-4 py-12">
+        <motion.div
+          initial={{ opacity: 0, y: 25 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="bg-zinc-900 p-8 rounded-2xl shadow-xl max-w-md w-full text-center"
+        >
+          <h1 className="text-3xl font-bold text-purple-400 mb-2 flex items-center justify-center gap-2">
+            Connect Your Wallet <Rocket className="w-6 h-6 text-purple-300" />
+          </h1>
+          <p className="text-gray-400 text-sm mb-6">
+            Connect to your wallet to unlock deep scan, scam protection and Web3 tools.
+          </p>
+
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={() => alert('🦊 Connect logic goes here!')}
+            className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded flex items-center justify-center gap-2 font-semibold"
           >
-            {isLoading ? 'Connecting...' : 'Connect Wallet'}
-          </button>
-        )}
+            <Wallet className="w-5 h-5" />
+            Connect Wallet
+          </motion.button>
 
-        <Link href="/">
-          <span className="mt-10 text-sm text-purple-400 hover:underline">
-            ← Back to Dashboard
-          </span>
-        </Link>
+          <button
+            onClick={() => router.push('/dashboard')}
+            className="mt-4 text-sm text-purple-400 hover:underline flex items-center justify-center gap-1"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Dashboard
+          </button>
+        </motion.div>
       </div>
     </>
   );
