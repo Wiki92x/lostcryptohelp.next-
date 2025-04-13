@@ -112,7 +112,7 @@ export default function DeepScanPage() {
           <div className="bg-red-800 text-white p-4 rounded text-sm">
             <p className="mb-1">🔒 This scan requires payment.</p>
             <p>💸 Send <strong>$1.5 (ETH)</strong> or <strong>$0.5 (BSC)</strong> to:</p>
-            <p className="mt-1 break-all">0xYourEthPaymentAddress / 0xYourBscPaymentAddress</p>
+            <p className="mt-1 break-all">0xa85f4DDE28941e41633b575D3a026A8B42887795 / 0xa85f4DDE28941e41633b575D3a026A8B42887795</p>
           </div>
         )}
 
