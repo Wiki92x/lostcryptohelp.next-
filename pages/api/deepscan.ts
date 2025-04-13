@@ -3,7 +3,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import fetch from 'node-fetch';
 
 const WHITELIST = [
-  '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
+  '0x28C6c06298d514Db089934071355E5743bf21d60',
   '0x0d8775f648430679a709e98d2b0cb6250d2887ef',
   'TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf',
 ];
