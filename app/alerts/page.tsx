@@ -4,6 +4,7 @@ import { useAccount } from 'wagmi';
 
 export default function AlertsPage() {
   const { address, isConnected } = useAccount();
+  const TELEGRAM_BOT_URL = 'https://t.me/YOUR_BOT_USERNAME'; // ✅ update this before deploy
 
   return (
     <div className="min-h-screen bg-black text-white px-4 md:px-6 py-20">
@@ -23,7 +24,7 @@ export default function AlertsPage() {
             <li>
               Send your wallet address:{' '}
               <code className="text-white font-mono">
-                {isConnected ? address : '0x...'}
+                {isConnected ? address : 'Please connect your wallet'}
               </code>
             </li>
             <li>The bot will automatically link and start watching your wallet.</li>
@@ -31,10 +32,14 @@ export default function AlertsPage() {
           </ol>
 
           <a
-            href="https://t.me/YOUR_BOT_USERNAME" // 🔁 Replace with actual bot link
+            href={TELEGRAM_BOT_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-block bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-md font-semibold transition text-center w-full"
+            className={`inline-block ${
+              TELEGRAM_BOT_URL.includes('YOUR_BOT_USERNAME')
+                ? 'bg-gray-600 cursor-not-allowed opacity-50'
+                : 'bg-purple-600 hover:bg-purple-700'
+            } px-6 py-3 rounded-md font-semibold transition text-center w-full`}
           >
             Connect to Telegram Bot
           </a>
