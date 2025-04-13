@@ -14,13 +14,13 @@ export default function HeroSection() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="bg-black text-white py-24 px-6 min-h-screen flex flex-col justify-center items-center"
+      className="bg-white text-black dark:bg-black dark:text-white py-24 px-6 min-h-screen flex flex-col justify-center items-center"
     >
       <div className="max-w-3xl mx-auto text-center space-y-6">
-        <h1 className="text-4xl sm:text-5xl font-extrabold text-purple-400 leading-tight">
+        <h1 className="text-4xl sm:text-5xl font-extrabold text-purple-600 dark:text-purple-400 leading-tight">
           Protect Your Crypto Wallet from Scams & Risks
         </h1>
-        <p className="text-gray-300 text-lg sm:text-xl max-w-xl mx-auto">
+        <p className="text-gray-700 dark:text-gray-300 text-lg sm:text-xl max-w-xl mx-auto">
           Scan any wallet for scam tokens, malicious approvals, phishing contracts & more.
           Supports Ethereum, BSC & TRON. No signups. No KYC.
         </p>
@@ -33,7 +33,7 @@ export default function HeroSection() {
           </Link>
           <Link
             href="/how-it-works"
-            className="text-purple-300 hover:text-purple-400 text-sm underline"
+            className="text-purple-500 hover:text-purple-600 dark:text-purple-300 dark:hover:text-purple-400 text-sm underline"
           >
             See how it works
           </Link>
