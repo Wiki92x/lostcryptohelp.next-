@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Global CSS variables for light/dark themes */
+/* Global CSS variables for theme switching */
 :root {
   --foreground: #000000;
   --background: #ffffff;
@@ -14,6 +14,7 @@
   --background: #0f1117;
 }
 
+/* Base styles */
 html, body {
   padding: 0;
   margin: 0;
@@ -22,36 +23,36 @@ html, body {
   color: var(--foreground);
   min-height: 100vh;
   transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-/* Smooth scroll behavior */
-html {
   scroll-behavior: smooth;
 }
 
-/* Button base styling */
+/* Interactive elements */
 button {
   transition: all 0.2s ease;
 }
 
-/* Form element reset */
+/* Form fields */
 input,
 textarea,
 select {
   background-color: var(--background);
   color: var(--foreground);
-}
-
-/* Utility classes for form border visuals in dark/light */
-input,
-textarea {
   border: 1px solid rgba(156, 163, 175, 0.4); /* gray-400 */
   border-radius: 0.375rem; /* rounded-md */
   padding: 0.5rem 0.75rem;
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s;
 }
 
-/* Fix for autofill background in Chrome */
-input:-webkit-autofill {
+/* Autofill fix */
+input:-webkit-autofill,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
   box-shadow: 0 0 0 1000px var(--background) inset !important;
   -webkit-text-fill-color: var(--foreground) !important;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+/* Optional: Smooth image rendering */
+img {
+  image-rendering: auto;
 }
