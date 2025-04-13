@@ -1,4 +1,3 @@
-// ✅ pages/api/deepscan.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import fetch from 'node-fetch';
 
@@ -24,6 +23,16 @@ function calculateRiskScore(riskFlags: Record<string, string>): number {
   }
   return Math.min(total, 100);
 }
+
+type Transfer = {
+  date: string;
+  transactionId: string;
+  amount: string;
+  token: string;
+  symbol: string;
+  risk_flags: Record<string, string>;
+  riskScore: number;
+};
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -87,7 +96,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(500).json({ error: 'Scan failed', message: data.message });
     }
 
-    const transfers = [];
+    const transfers: Transfer[] = [];
     const topTransfers = data.result.slice(0, 10);
 
     for (const tx of topTransfers) {
@@ -108,9 +117,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    const averageScore = Math.round(
-      transfers.reduce((sum, t) => sum + (t.riskScore || 0), 0) / transfers.length
-    );
+    const averageScore = Math.round(transfers.reduce((sum, t) => sum + (t.riskScore || 0), 0) / transfers.length);
 
     const topToken = transfers.reduce((acc, tx) => {
       acc[tx.symbol] = (acc[tx.symbol] || 0) + 1;
