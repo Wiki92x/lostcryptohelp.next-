@@ -18,7 +18,7 @@ export default function Navbar() {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-gray-900 dark:bg-white shadow-lg">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          {/* Brand Name */}
+          {/* Brand */}
           <Link href="/" className="flex items-center space-x-2">
             <span className="font-semibold text-white dark:text-gray-900 text-lg">
               LostCryptoHelp
@@ -42,14 +42,27 @@ export default function Navbar() {
           {/* Mobile Menu Button */}
           <div className="md:hidden">
             <button
+              aria-label="Toggle Menu"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="text-gray-300 hover:text-white dark:text-gray-700 dark:hover:text-gray-900"
             >
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 {isMenuOpen ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <path
+                    key="close"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  <path
+                    key="open"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
                 )}
               </svg>
             </button>
@@ -57,7 +70,7 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Dropdown */}
+      {/* Mobile Dropdown Menu */}
       {isMenuOpen && (
         <div className="md:hidden px-4 pb-4 pt-2 space-y-2">
           <Link href="/deep-scan" className="block text-gray-300 hover:text-white dark:text-gray-700 dark:hover:text-gray-900">
