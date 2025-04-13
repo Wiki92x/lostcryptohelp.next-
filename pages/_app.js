@@ -13,13 +13,27 @@ export default function MyApp({ Component, pageProps }) {
       <WagmiConfig config={wagmiConfig}>
         <Head>
           <title>LostCryptoHelp</title>
-          <meta name="description" content="Scan your wallet for scam risks" />
+          <meta name="description" content="Scan your crypto wallet for scam tokens, fake approvals, phishing, and contract risks." />
           <link rel="icon" href="/favicon.ico" />
         </Head>
-        <Navbar />
-        <Component {...pageProps} />
-        <Footer />
-        <Toaster position="top-right" />
+
+        <div className="bg-[var(--background)] text-[var(--foreground)] transition-colors duration-300 min-h-screen">
+          <Navbar />
+          <main className="pt-16 px-4">
+            <Component {...pageProps} />
+          </main>
+          <Footer />
+        </div>
+
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            style: {
+              background: '#333',
+              color: '#fff',
+            },
+          }}
+        />
       </WagmiConfig>
     </ThemeProviderWrapper>
   );
