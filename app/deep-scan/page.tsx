@@ -64,7 +64,10 @@ export default function DeepScanPage() {
       setResult(data);
       toast.success('Scan complete');
 
-      // Trigger Telegram alert
+      const timestamp = new Date().toISOString();
+      const history = JSON.parse(localStorage.getItem('scanHistory') || '[]');
+      localStorage.setItem('scanHistory', JSON.stringify([{ ...data, timestamp }, ...history.slice(0, 50)]));
+
       await fetch('/api/notify-telegram', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -94,6 +97,10 @@ export default function DeepScanPage() {
       setResult(data);
       setShowPayment(false);
       toast.success('Payment verified. Scan complete.');
+
+      const timestamp = new Date().toISOString();
+      const history = JSON.parse(localStorage.getItem('scanHistory') || '[]');
+      localStorage.setItem('scanHistory', JSON.stringify([{ ...data, timestamp }, ...history.slice(0, 50)]));
 
       await fetch('/api/notify-telegram', {
         method: 'POST',
