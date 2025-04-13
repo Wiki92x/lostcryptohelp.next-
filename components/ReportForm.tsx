@@ -58,51 +58,66 @@ export default function ReportForm({ txHash, chain, method }: ReportFormProps) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-white dark:bg-gray-800 text-black dark:text-white p-6 rounded-lg shadow-xl w-full max-w-2xl"
+      className="w-full max-w-2xl mx-auto space-y-6 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-2xl p-6 shadow-lg"
     >
-      <div className="mb-4">
-        <label className="block mb-1 font-medium">Name</label>
+      {/* Name */}
+      <div>
+        <label className="block text-sm font-medium mb-1">Name</label>
         <input
+          type="text"
           name="name"
           value={formData.name}
           onChange={handleChange}
-          className="w-full px-3 py-2 border border-purple-400 dark:border-purple-600 rounded bg-white dark:bg-gray-900 dark:text-white"
+          className="w-full px-4 py-2 rounded-lg border border-purple-400 dark:border-purple-600 bg-white dark:bg-gray-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
           required
         />
       </div>
 
-      <div className="mb-4">
-        <label className="block mb-1 font-medium">Wallet Address</label>
+      {/* Wallet */}
+      <div>
+        <label className="block text-sm font-medium mb-1">Wallet Address</label>
         <input
+          type="text"
           name="wallet"
           value={formData.wallet}
           onChange={handleChange}
-          className="w-full px-3 py-2 border border-purple-400 dark:border-purple-600 rounded bg-white dark:bg-gray-900 dark:text-white"
+          className="w-full px-4 py-2 rounded-lg border border-purple-400 dark:border-purple-600 bg-white dark:bg-gray-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
           required
         />
       </div>
 
-      <div className="mb-4">
-        <label className="block mb-1 font-medium">What happened?</label>
+      {/* Message */}
+      <div>
+        <label className="block text-sm font-medium mb-1">What happened?</label>
         <textarea
           name="message"
           value={formData.message}
           onChange={handleChange}
-          rows={4}
-          className="w-full px-3 py-2 border border-purple-400 dark:border-purple-600 rounded bg-white dark:bg-gray-900 dark:text-white"
+          rows={5}
+          className="w-full px-4 py-2 rounded-lg border border-purple-400 dark:border-purple-600 bg-white dark:bg-gray-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
           required
         />
       </div>
 
+      {/* Submit Button */}
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-2 px-4 rounded bg-purple-700 text-white font-semibold hover:bg-purple-800 disabled:opacity-50"
+        className="w-full py-3 rounded-xl bg-purple-700 hover:bg-purple-800 transition text-white font-semibold tracking-wide disabled:opacity-50"
       >
         {loading ? 'Submitting...' : 'Submit Report'}
       </button>
 
-      {status && <p className="mt-4 text-sm">{status}</p>}
+      {/* Status Message */}
+      {status && (
+        <p
+          className={`mt-4 text-sm font-medium ${
+            status.includes('✅') ? 'text-green-400' : 'text-red-400'
+          }`}
+        >
+          {status}
+        </p>
+      )}
     </form>
   );
 }
