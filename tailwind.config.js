@@ -9,9 +9,11 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: '#6D28D9',   // purple-700
-        secondary: '#9333EA', // purple-600
-        accent: '#22D3EE',    // cyan-400
+        primary: '#6D28D9',    // purple-700
+        secondary: '#9333EA',  // purple-600
+        accent: '#22D3EE',     // cyan-400
+        foreground: 'var(--foreground)',
+        background: 'var(--background)',
       },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
