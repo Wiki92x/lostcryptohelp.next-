@@ -1,4 +1,4 @@
-'use client';
+// ✅ app/privacy/page.tsx
 
 import { motion } from 'framer-motion';
 
@@ -17,15 +17,15 @@ export default function PrivacyPage() {
     >
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold text-purple-400 mb-6">Privacy Policy</h1>
-
-        <ul className="list-disc pl-6 space-y-3 text-sm text-gray-700 dark:text-gray-300">
-          <li>No wallets or personal data is ever stored on our servers.</li>
-          <li>Scans are performed client-side or via public APIs.</li>
-          <li>We do not use cookies, analytics, or any third-party trackers.</li>
-          <li>Telegram alerts are encrypted and opt-in only.</li>
-          <li>PDFs are generated locally and never uploaded.</li>
+        <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+          We do not track users. We do not store wallet addresses or scan results.
+        </p>
+        <ul className="list-disc pl-6 mt-4 space-y-2 text-sm text-gray-700 dark:text-gray-300">
+          <li>No analytics, cookies, or IP tracking.</li>
+          <li>PDF reports are generated client-side only.</li>
+          <li>Telegram alerts are encrypted and not logged.</li>
+          <li>No third-party logins or wallets stored.</li>
         </ul>
-
         <p className="mt-6 text-xs text-gray-500 dark:text-gray-400">
           Last updated: {new Date().toLocaleDateString()}
         </p>
