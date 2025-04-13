@@ -1,4 +1,4 @@
-// ✅ app/privacy/page.tsx
+// app/privacy/page.tsx (✅ Server-safe)
 
 import { motion } from 'framer-motion';
 
@@ -18,13 +18,13 @@ export default function PrivacyPage() {
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold text-purple-400 mb-6">Privacy Policy</h1>
         <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
-          We do not track users. We do not store wallet addresses or scan results.
+          LostCryptoHelp respects your privacy:
         </p>
         <ul className="list-disc pl-6 mt-4 space-y-2 text-sm text-gray-700 dark:text-gray-300">
-          <li>No analytics, cookies, or IP tracking.</li>
-          <li>PDF reports are generated client-side only.</li>
-          <li>Telegram alerts are encrypted and not logged.</li>
-          <li>No third-party logins or wallets stored.</li>
+          <li>No tracking, cookies, or analytics.</li>
+          <li>We do not store wallet addresses or scan results.</li>
+          <li>PDF reports are never uploaded to our servers.</li>
+          <li>Telegram alerts are opt-in and encrypted.</li>
         </ul>
         <p className="mt-6 text-xs text-gray-500 dark:text-gray-400">
           Last updated: {new Date().toLocaleDateString()}
