@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { ArrowRightIcon } from '@heroicons/react/24/outline';
+import ConnectWalletButton from './ConnectWalletButton';
+
 
 export default function HeroSection() {
   const [mounted, setMounted] = useState(false);
