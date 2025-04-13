@@ -25,10 +25,7 @@ function calculateRiskScore(riskFlags: Record<string, string>): number {
   return Math.min(total, 100);
 }
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-): Promise<void> {
+export default async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
     return;
@@ -44,7 +41,7 @@ export default async function handler(
   const apiKeys: Record<string, string> = {
     eth: process.env.ETHERSCAN_API_KEY || '',
     bsc: process.env.BSCSCAN_API_KEY || '',
-    tron: '',
+    tron: process.env.TRONSCAN_API_KEY || '',
   };
 
   const baseUrls: Record<string, string> = {
@@ -71,9 +68,7 @@ export default async function handler(
 
   try {
     if (chain === 'tron') {
-      const tronRes = await fetch(
-        `${baseUrls.tron}?sort=-timestamp&count=true&limit=50&start=0&address=${wallet}`
-      );
+      const tronRes = await fetch(`${baseUrls.tron}?sort=-timestamp&count=true&limit=50&start=0&address=${wallet}`);
       const data = await tronRes.json();
 
       const transactions = data.data.slice(0, 50).map((tx: any) => ({
@@ -141,11 +136,12 @@ export default async function handler(
       transfers.reduce((sum, t) => sum + (t.riskScore || 0), 0) / transfers.length
     );
 
-    const topToken = transfers.reduce((acc, tx) => {
+    const tokenCount = transfers.reduce((acc, tx) => {
       acc[tx.symbol] = (acc[tx.symbol] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
-    const mostActive = Object.entries(topToken).sort((a, b) => b[1] - a[1])[0][0];
+
+    const mostUsed = Object.entries(tokenCount).sort((a, b) => b[1] - a[1])[0][0];
 
     await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/telegram-report`, {
       method: 'POST',
@@ -154,7 +150,7 @@ export default async function handler(
         wallet,
         chain: chain.toUpperCase(),
         riskScore: `${averageScore}/100`,
-        topToken: mostActive,
+        topToken: mostUsed,
         txCount: transfers.length,
       }),
     });
