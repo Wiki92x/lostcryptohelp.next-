@@ -1,12 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import ThemeSwitcher from './ThemeSwitcher';
+import { useState, useEffect } from 'react';
 
 export default function Navbar() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -15,74 +14,38 @@ export default function Navbar() {
   if (!mounted) return null;
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-gray-900 dark:bg-white shadow-lg">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          {/* Brand */}
-          <Link href="/" className="flex items-center space-x-2">
-            <span className="font-semibold text-white dark:text-gray-900 text-lg">
-              LostCryptoHelp
-            </span>
-          </Link>
-
-          {/* Desktop Nav */}
-          <div className="hidden md:flex items-center space-x-4">
-            <Link href="/deep-scan" className="text-gray-300 hover:text-white dark:text-gray-700 dark:hover:text-gray-900">
-              Deep Scan
-            </Link>
-            <Link href="/about" className="text-gray-300 hover:text-white dark:text-gray-700 dark:hover:text-gray-900">
-              About
-            </Link>
-            <Link href="/how-it-works" className="text-gray-300 hover:text-white dark:text-gray-700 dark:hover:text-gray-900">
-              How It Works
-            </Link>
-            <ThemeSwitcher />
-          </div>
-
-          {/* Mobile Menu Button */}
-          <div className="md:hidden">
-            <button
-              aria-label="Toggle Menu"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-gray-300 hover:text-white dark:text-gray-700 dark:hover:text-gray-900"
-            >
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                {isMenuOpen ? (
-                  <path
-                    key="close"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                ) : (
-                  <path
-                    key="open"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                )}
-              </svg>
-            </button>
-          </div>
+    <nav className="w-full px-4 py-4 bg-black text-white border-b border-gray-800">
+      <div className="max-w-6xl mx-auto flex items-center justify-between">
+        <Link href="/" className="text-xl font-bold text-purple-500 hover:opacity-80 transition">
+          LostCryptoHelp 🚀
+        </Link>
+        <div className="hidden md:flex items-center space-x-6 text-sm font-medium">
+          <Link href="/deep-scan" className="hover:text-purple-400 transition">Deep Scan</Link>
+          <Link href="/about" className="hover:text-purple-400 transition">About</Link>
+          <Link href="/how-it-works" className="hover:text-purple-400 transition">How it Works</Link>
+          <Link href="/report" className="hover:text-purple-400 transition">Report</Link>
         </div>
+        <button
+          className="md:hidden focus:outline-none"
+          onClick={() => setMenuOpen(!menuOpen)}
+        >
+          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            {menuOpen ? (
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            ) : (
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+            )}
+          </svg>
+        </button>
       </div>
 
-      {/* Mobile Dropdown Menu */}
-      {isMenuOpen && (
-        <div className="md:hidden px-4 pb-4 pt-2 space-y-2">
-          <Link href="/deep-scan" className="block text-gray-300 hover:text-white dark:text-gray-700 dark:hover:text-gray-900">
-            Deep Scan
-          </Link>
-          <Link href="/about" className="block text-gray-300 hover:text-white dark:text-gray-700 dark:hover:text-gray-900">
-            About
-          </Link>
-          <Link href="/how-it-works" className="block text-gray-300 hover:text-white dark:text-gray-700 dark:hover:text-gray-900">
-            How It Works
-          </Link>
-          <ThemeSwitcher />
+      {/* Mobile Menu */}
+      {menuOpen && (
+        <div className="md:hidden mt-2 space-y-2 px-4 text-sm">
+          <Link href="/deep-scan" className="block hover:text-purple-400">Deep Scan</Link>
+          <Link href="/about" className="block hover:text-purple-400">About</Link>
+          <Link href="/how-it-works" className="block hover:text-purple-400">How it Works</Link>
+          <Link href="/report" className="block hover:text-purple-400">Report</Link>
         </div>
       )}
     </nav>
