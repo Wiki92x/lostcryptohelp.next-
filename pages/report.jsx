@@ -1,43 +1,40 @@
+// pages/report.jsx
 import Head from 'next/head';
 import dynamic from 'next/dynamic';
-import { useTheme } from 'next-themes';
+import { motion } from 'framer-motion';
+import { ShieldAlert } from 'lucide-react';
 
-// Load form
-import ReportForm from '../components/ReportForm';
+const ReportForm = dynamic(() => import('../components/ReportForm'), { ssr: false });
 
 export default function ReportPage() {
-  const { theme } = useTheme();
-
   return (
     <>
       <Head>
-        <title>Submit Crypto Report | LostCryptoHelp</title>
+        <title>Submit a Crypto Report | LostCryptoHelp</title>
         <meta
           name="description"
-          content="Submit a crypto scam report anonymously. Get real-time alerts and blockchain validation."
+          content="Flag scams, suspicious tokens or wallet addresses anonymously. Reports go straight to Telegram alerts."
         />
       </Head>
-
-      <div
-        className={`min-h-screen py-16 px-6 transition-colors ${
-          theme === 'dark' ? 'bg-black text-white' : 'bg-white text-black'
-        }`}
-      >
-        <div className="max-w-3xl mx-auto space-y-8">
-          <div>
-            <h1 className="text-4xl font-bold text-purple-400 mb-3">
-              🚨 Submit a Crypto Report
+      <div className="min-h-screen bg-black text-white py-16 px-4">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="max-w-xl mx-auto"
+        >
+          <div className="mb-10 text-center">
+            <h1 className="text-3xl font-bold text-purple-400 flex justify-center items-center gap-2">
+              <ShieldAlert className="w-6 h-6 text-red-500" />
+              Submit a Crypto Report
             </h1>
-            <p className="text-gray-400 text-sm md:text-base">
-              Flag a scam project, malicious wallet, fake contract, or suspicious token.
-              Your submission is anonymous. Reports are verified and sent via Telegram bot.
+            <p className="text-gray-400 mt-2 text-sm">
+              Flag a scam project, malicious wallet, fake contract, or suspicious token. Your submission is anonymous.
             </p>
           </div>
 
-          <div className="bg-gray-900/70 dark:bg-white/5 p-6 rounded-xl shadow-lg border border-gray-800">
-            <ReportForm />
-          </div>
-        </div>
+          <ReportForm />
+        </motion.div>
       </div>
     </>
   );
