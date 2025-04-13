@@ -1,7 +1,8 @@
-// ✅ NO 'use client' here
+// ✅ app/privacy/page.tsx
+import { Metadata } from 'next';
 import { motion } from 'framer-motion';
 
-export const metadata = {
+export const metadata: Metadata = {
   title: 'Privacy Policy | LostCryptoHelp',
   description: 'Read how LostCryptoHelp protects your data, privacy, and wallet anonymity.',
 };
@@ -17,16 +18,12 @@ export default function PrivacyPage() {
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold text-purple-400 mb-6">Privacy Policy</h1>
 
-        <p className="mb-4 text-sm leading-relaxed text-gray-600 dark:text-gray-300">
-          Your privacy matters. Here’s what we stand for:
-        </p>
-
         <ul className="list-disc pl-6 space-y-3 text-sm text-gray-700 dark:text-gray-300">
-          <li>No wallet addresses are stored on our servers</li>
-          <li>We never collect personal data or track you</li>
-          <li>Scans are done anonymously without login</li>
-          <li>Reports are generated client-side and not saved</li>
-          <li>No cookies, analytics or third-party trackers</li>
+          <li>We do not store wallet addresses, private keys, or personal data.</li>
+          <li>All scans happen client-side or via decentralized APIs.</li>
+          <li>We do not use cookies, tracking pixels, or analytics tools.</li>
+          <li>Telegram alerts are encrypted, opt-in, and never linked to identity.</li>
+          <li>PDF reports are generated on-device and never saved to servers.</li>
         </ul>
 
         <p className="mt-6 text-xs text-gray-500 dark:text-gray-400">
