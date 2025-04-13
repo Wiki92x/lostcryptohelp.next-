@@ -25,7 +25,8 @@ export default function RevokePage() {
       const res = await fetch(`/api/approvals?wallet=${address}`);
       if (!res.ok) throw new Error('Failed to fetch approvals');
       const data = await res.json();
-      setApprovals(data || []);
+      if (!Array.isArray(data)) throw new Error('Unexpected response format');
+      setApprovals(data);
     } catch (err: any) {
       console.error(err);
       setFetchError(err.message || 'Something went wrong');
@@ -72,7 +73,7 @@ export default function RevokePage() {
               <p><strong>Token:</strong> {item.token}</p>
               <button
                 disabled={revoking || !address}
-                onClick={() => revokeAccess(address!, 'eth')}
+                onClick={() => address && revokeAccess(address, 'eth')}
                 className="mt-3 px-4 py-2 bg-red-600 rounded hover:bg-red-700 disabled:opacity-50"
               >
                 {revoking ? 'Revoking...' : 'Revoke Access'}
