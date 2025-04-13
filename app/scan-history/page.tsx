@@ -1,72 +1,55 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { generatePDF } from '@/utils/generatePDF';
-import { motion } from 'framer-motion';
 
-interface Scan {
-  address: string;
+interface ScanItem {
+  wallet: string;
   chain: string;
-  riskScore: string;
-  timestamp: string;
-  transactions: any[];
+  score: string;
+  scannedAt: string;
 }
 
-export default function ScanHistoryPage() {
-  const [history, setHistory] = useState<Scan[]>([]);
+export default function ScanHistory() {
+  const [history, setHistory] = useState<ScanItem[]>([]);
 
   useEffect(() => {
-    const raw = localStorage.getItem('scanHistory');
-    if (raw) {
-      setHistory(JSON.parse(raw));
+    const stored = localStorage.getItem('scanHistory');
+    if (stored) {
+      setHistory(JSON.parse(stored));
     }
   }, []);
 
-  const handleDownload = (scan: Scan) => {
-    generatePDF(scan);
-  };
-
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      className="min-h-screen px-6 py-16 bg-black text-white"
-    >
+    <div className="min-h-screen bg-black text-white px-4 py-20">
       <div className="max-w-5xl mx-auto">
-        <h1 className="text-3xl font-bold text-purple-400 mb-8">🔁 Scan History</h1>
+        <h1 className="text-3xl font-bold text-purple-500 mb-4">Scan History</h1>
 
         {history.length === 0 ? (
-          <p className="text-gray-500">No scans found yet.</p>
+          <p className="text-gray-400">No scans recorded yet.</p>
         ) : (
-          <div className="overflow-x-auto rounded-lg border border-zinc-700">
-            <table className="min-w-full text-sm text-left">
-              <thead className="bg-zinc-800 text-purple-300">
+          <div className="overflow-x-auto bg-zinc-900 p-4 rounded-xl border border-purple-600 shadow-lg">
+            <table className="w-full text-left text-sm border-collapse">
+              <thead className="text-gray-400 border-b border-gray-700">
                 <tr>
-                  <th className="p-3">Wallet</th>
-                  <th className="p-3">Chain</th>
-                  <th className="p-3">Score</th>
-                  <th className="p-3">Time</th>
-                  <th className="p-3">Actions</th>
+                  <th className="py-2 pr-4">Wallet</th>
+                  <th className="py-2 pr-4">Chain</th>
+                  <th className="py-2 pr-4">Risk Score</th>
+                  <th className="py-2">Time</th>
                 </tr>
               </thead>
-              <tbody className="bg-zinc-900">
-                {history.map((scan, i) => (
-                  <tr key={i} className="border-t border-zinc-800">
-                    <td className="p-3 font-mono">{scan.address.slice(0, 10)}...</td>
-                    <td className="p-3">{scan.chain}</td>
-                    <td className={`p-3 font-bold ${parseInt(scan.riskScore) >= 70 ? 'text-red-500' : 'text-green-400'}`}>
-                      {scan.riskScore}
+              <tbody>
+                {history.map((item, idx) => (
+                  <tr key={idx} className="border-t border-gray-800">
+                    <td className="py-2 pr-4 font-mono">{item.wallet}</td>
+                    <td className="py-2 pr-4">{item.chain}</td>
+                    <td
+                      className={`py-2 pr-4 font-semibold ${
+                        item.score.includes('High') ? 'text-red-500' : 'text-green-400'
+                      }`}
+                    >
+                      {item.score}
                     </td>
-                    <td className="p-3 text-gray-400">{scan.timestamp}</td>
-                    <td className="p-3">
-                      <button
-                        onClick={() => handleDownload(scan)}
-                        className="bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm"
-                      >
-                        📄 PDF
-                      </button>
-                    </td>
+                    <td className="py-2 text-gray-400">{item.scannedAt}</td>
                   </tr>
                 ))}
               </tbody>
@@ -74,6 +57,6 @@ export default function ScanHistoryPage() {
           </div>
         )}
       </div>
-    </motion.div>
+    </div>
   );
 }
