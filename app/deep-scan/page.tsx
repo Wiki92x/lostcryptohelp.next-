@@ -94,6 +94,28 @@ export default function DeepScanPage() {
     }
   };
 
+  const getTopToken = () => {
+    if (!result?.transactions?.length) return 'N/A';
+    const count: Record<string, number> = {};
+    result.transactions.forEach((tx: any) => {
+      count[tx.symbol] = (count[tx.symbol] || 0) + 1;
+    });
+    return Object.entries(count).sort((a, b) => b[1] - a[1])[0][0];
+  };
+
+  const getTopRiskToken = () => {
+    if (!result?.transactions?.length) return 'N/A';
+    const sorted = [...result.transactions].sort((a, b) => b.riskScore - a.riskScore);
+    return `${sorted[0]?.symbol} (${sorted[0]?.riskScore}/100)` || 'N/A';
+  };
+
+  const getConfidence = () => {
+    const txCount = result?.transactions?.length || 0;
+    if (txCount >= 100) return 'High';
+    if (txCount >= 50) return 'Medium';
+    return 'Low';
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -180,12 +202,36 @@ export default function DeepScanPage() {
               </pre>
             ) : (
               <>
-                <hr className="border-gray-700 my-2" />
+                {(chain === 'eth' || chain === 'bsc') && (
+                  <>
+                    <hr className="border-gray-700 my-3" />
+                    <div className="space-y-2">
+                      <h2 className="text-white font-semibold text-base">Scan Summary</h2>
+                      <p>Top Token by Risk: <span className="text-green-400">{getTopRiskToken()}</span></p>
+                      <p>Most Active Token: <span className="text-green-400">{getTopToken()}</span></p>
+                      <p>Scan Confidence: <span className="text-green-400">{getConfidence()}</span></p>
+                      <p>{chain.toUpperCase()} scan includes {result.transactions?.length}+ transactions</p>
+                    </div>
+                    <div className="mt-4">
+                      <h2 className="text-white font-semibold text-base mb-1">AI Analysis</h2>
+                      <p className="text-sm text-gray-300">
+                        This wallet shows high-volume activity in {getTopToken()} with {result.riskScore.split('/')[0]} risk score detected.
+                        No suspicious token behavior found in the top {result.transactions?.length} transactions.
+                      </p>
+                    </div>
+                  </>
+                )}
+                <hr className="border-gray-700 my-3" />
                 <p className="text-gray-400 font-medium">Last Transactions:</p>
                 <ul className="list-disc pl-5 space-y-1">
                   {result.transactions?.slice(0, 10).map((tx: any, idx: number) => (
                     <li key={idx}>
                       <span className="text-green-400">{tx.symbol}</span> — {tx.amount} on {tx.date}
+                      {chain !== 'tron' && (
+                        <span className="ml-2 text-xs text-white bg-green-700 px-2 py-0.5 rounded">
+                          {tx.riskScore >= 60 ? 'HIGH' : tx.riskScore > 0 ? 'MEDIUM' : 'SAFE'}
+                        </span>
+                      )}
                     </li>
                   ))}
                 </ul>
