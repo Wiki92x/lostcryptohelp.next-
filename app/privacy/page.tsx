@@ -1,4 +1,4 @@
-// ✅ Do NOT use 'use client' here if using metadata
+// ✅ NO 'use client' here
 import { motion } from 'framer-motion';
 
 export const metadata = {
