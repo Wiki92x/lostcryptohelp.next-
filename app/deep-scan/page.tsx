@@ -12,8 +12,10 @@ const fees = {
 };
 
 const paymentAddresses = {
-  eth: '0xYourEthPaymentAddress',
-  bsc: '0xYourBscPaymentAddress',
+  eth: '0xa85f4DDE28941e41633b575D3a026A8B42887795',
+  bsc: '0xa85f4DDE28941e41633b575D3a026A8B42887795',
+  tron: 'TVH1roHbPn5qCj14Dy1GSVrB5XDcsjgEyX', 
+
 };
 
 export default function DeepScanPage() {
