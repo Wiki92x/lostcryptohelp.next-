@@ -8,7 +8,7 @@ const WHITELIST = [
   'TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf',
 ];
 
-// 🧠 Define weighted risks
+// 🧠 Risk score weights
 const RISK_WEIGHTS: Record<string, number> = {
   is_honeypot: 25,
   can_take_back_ownership: 20,
@@ -18,7 +18,7 @@ const RISK_WEIGHTS: Record<string, number> = {
   trading_cooldown: 5,
 };
 
-// ⚙️ Calculate token risk
+// 🔐 Score calculator
 function calculateRiskScore(riskFlags: Record<string, string>): number {
   let total = 0;
   for (const [flag, weight] of Object.entries(RISK_WEIGHTS)) {
@@ -27,14 +27,21 @@ function calculateRiskScore(riskFlags: Record<string, string>): number {
   return Math.min(total, 100);
 }
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+// ✅ API Handler
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+): Promise<void> {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    res.status(405).json({ error: 'Method not allowed' });
+    return;
   }
 
   const { wallet, chain } = req.body;
+
   if (!wallet || !chain) {
-    return res.status(400).json({ error: 'Missing wallet or chain' });
+    res.status(400).json({ error: 'Missing wallet or chain' });
+    return;
   }
 
   const apiKeys: Record<string, string> = {
@@ -53,7 +60,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const requiresPayment = chain !== 'tron' && !isWhitelisted;
 
   if (requiresPayment) {
-    return res.status(402).json({
+    res.status(402).json({
       error: 'Payment required for scan',
       payment: {
         eth: '0xYourEthPaymentAddressHere',
@@ -62,11 +69,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         currency: chain.toUpperCase(),
       },
     });
+    return;
   }
 
   try {
     if (chain === 'tron') {
-      const tronRes = await fetch(`${baseUrls.tron}?sort=-timestamp&count=true&limit=10&start=0&address=${wallet}`);
+      const tronRes = await fetch(
+        `${baseUrls.tron}?sort=-timestamp&count=true&limit=10&start=0&address=${wallet}`
+      );
       const data = await tronRes.json();
 
       const transactions = data.data.slice(0, 10).map((tx: any) => ({
@@ -79,12 +89,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         riskScore: 0,
       }));
 
-      return res.status(200).json({
+      res.status(200).json({
         address: wallet,
         chain: 'TRON',
         riskScore: 'Preview Only — Full Report Requires Upgrade',
         transactions,
       });
+      return;
     }
 
     const url = `${baseUrls[chain]}?module=account&action=tokentx&address=${wallet}&startblock=0&endblock=99999999&sort=desc&apikey=${apiKeys[chain]}`;
@@ -92,15 +103,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const data = await response.json();
 
     if (data.status !== '1') {
-      return res.status(500).json({ error: 'Scan failed', message: data.message });
+      res.status(500).json({ error: 'Scan failed', message: data.message });
+      return;
     }
 
+    // 🔁 Analyze top transfers
+    const transfers: {
+      date: string;
+      transactionId: string;
+      amount: string;
+      token: string;
+      symbol: string;
+      risk_flags: Record<string, string>;
+      riskScore: number;
+    }[] = [];
+
     const topTransfers = data.result.slice(0, 10);
-    const transfers: any[] = [];
 
     for (const tx of topTransfers) {
       const contract = tx.contractAddress?.toLowerCase();
-      const riskRes = await fetch(`https://api.gopluslabs.io/api/v1/token_security/1?contract_addresses=${contract}`);
+
+      const riskRes = await fetch(
+        `https://api.gopluslabs.io/api/v1/token_security/1?contract_addresses=${contract}`
+      );
       const riskData = await riskRes.json();
       const riskFlags = riskData.result?.[contract] || {};
       const tokenRiskScore = calculateRiskScore(riskFlags);
@@ -120,7 +145,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       transfers.reduce((sum, t) => sum + (t.riskScore || 0), 0) / transfers.length
     );
 
-    return res.status(200).json({
+    res.status(200).json({
       address: wallet,
       chain: chain.toUpperCase(),
       riskScore: `${averageScore}/100`,
@@ -128,6 +153,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   } catch (err: any) {
     console.error('[DeepScan Error]', err);
-    return res.status(500).json({ error: 'Internal Server Error', details: err.message });
+    res.status(500).json({ error: 'Internal Server Error', details: err.message });
   }
 }
