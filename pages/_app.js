@@ -6,8 +6,6 @@ import { Toaster } from 'react-hot-toast';
 import Head from 'next/head';
 import { WagmiConfig } from 'wagmi';
 import wagmiConfig from '@/lib/wagmiClient';
-import Navbar from '@/components/Navbar'; // ✅
-import Footer from '@/components/Footer'; // ✅
 
 export default function MyApp({ Component, pageProps }) {
   const [mounted, setMounted] = useState(false);
@@ -16,25 +14,20 @@ export default function MyApp({ Component, pageProps }) {
     setMounted(true);
   }, []);
 
-  if (!mounted || !wagmiConfig) return null;
+  // 🧪 Prevent hydration mismatch for theme
+  if (!mounted) return null;
 
   return (
-    <WagmiConfig config={wagmiConfig}>
-      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={true}>
+      <WagmiConfig config={wagmiConfig}>
         <Head>
           <title>LostCryptoHelp</title>
           <meta
             name="description"
-            content="Scan your crypto wallet for scam tokens, fake approvals, phishing, and contract risks. Ethereum, BSC, TRON supported."
+            content="Scan your crypto wallet for scam tokens, fake approvals, phishing, and contract risks."
           />
           <link rel="icon" href="/favicon.ico" />
         </Head>
-
-        <Navbar /> {/* ✅ Injected */}
-        <main className="min-h-screen bg-black text-white">
-          <Component {...pageProps} />
-        </main>
-        <Footer /> {/* ✅ Injected */}
 
         <Toaster
           position="top-right"
@@ -45,7 +38,9 @@ export default function MyApp({ Component, pageProps }) {
             },
           }}
         />
-      </ThemeProvider>
-    </WagmiConfig>
+
+        <Component {...pageProps} />
+      </WagmiConfig>
+    </ThemeProvider>
   );
 }
