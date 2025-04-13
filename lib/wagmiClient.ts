@@ -1,7 +1,7 @@
 // lib/wagmiClient.ts
 'use client';
 
-import { configureChains, createConfig } from 'wagmi';
+import { createConfig, configureChains } from 'wagmi';
 import { mainnet, polygon, bsc } from 'wagmi/chains';
 import { publicProvider } from 'wagmi/providers/public';
 
