@@ -3,7 +3,7 @@
 import '../styles/globals.css';
 import { WagmiConfig } from 'wagmi';
 import wagmiConfig from '@/lib/wagmiClient';
-import ClientOnly from '@/components/ClientOnly'; // ✅ make sure the path is correct
+import ClientOnly from '@/components/ClientOnly';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
