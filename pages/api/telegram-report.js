@@ -1,4 +1,4 @@
-// pages/api/notify-telegram.ts
+// pages/api/notify-telegram.t
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
