@@ -11,12 +11,18 @@ const fees = {
   tron: 0,
 };
 
+const paymentAddresses = {
+  eth: '0xYourEthPaymentAddress',
+  bsc: '0xYourBscPaymentAddress',
+};
+
 export default function DeepScanPage() {
   const [wallet, setWallet] = useState('');
   const [chain, setChain] = useState('eth');
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState('');
+  const [showPayment, setShowPayment] = useState(false);
   const router = useRouter();
 
   const isValidWallet = (addr: string) =>
@@ -32,6 +38,7 @@ export default function DeepScanPage() {
     setScanning(true);
     setError('');
     setResult(null);
+    setShowPayment(false);
     toast.loading('Scanning in progress...');
 
     try {
@@ -43,15 +50,44 @@ export default function DeepScanPage() {
 
       const data = await res.json();
 
+      if (res.status === 402) {
+        setShowPayment(true);
+        toast.dismiss();
+        toast.error('Payment required');
+        return;
+      }
+
       if (!res.ok) throw new Error(data.error || 'Scan failed');
       setResult(data);
       toast.success('Scan complete');
     } catch (err: any) {
-      toast.dismiss();
       setError(err.message || 'Something went wrong');
       toast.error(err.message || 'Scan failed');
     } finally {
       setScanning(false);
+      toast.dismiss();
+    }
+  };
+
+  const handleVerifyPayment = async () => {
+    toast.loading('Verifying payment...');
+    try {
+      const res = await fetch('/api/verify-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ wallet, chain }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || 'Verification failed');
+      setResult(data);
+      setShowPayment(false);
+      toast.success('Payment verified. Scan complete.');
+    } catch (err: any) {
+      toast.dismiss();
+      toast.error(err.message || 'Verification failed');
+    } finally {
       toast.dismiss();
     }
   };
@@ -100,6 +136,20 @@ export default function DeepScanPage() {
         >
           ← Back to Homepage
         </button>
+
+        {showPayment && (
+          <div className="bg-red-800 text-white p-4 rounded mt-4 text-sm space-y-2">
+            <p>💸 Please pay <strong>${fees[chain]}</strong> to:</p>
+            <p className="break-all text-purple-300">{paymentAddresses[chain] || 'N/A'}</p>
+            <p>Once done, click below:</p>
+            <button
+              onClick={handleVerifyPayment}
+              className="w-full bg-green-600 hover:bg-green-700 py-2 rounded mt-2"
+            >
+              ✅ I’ve Paid – Verify Payment
+            </button>
+          </div>
+        )}
 
         {error && (
           <div className="w-full bg-red-800 text-white p-2 rounded mt-4 text-sm text-center">
