@@ -1,42 +1,60 @@
-// ✅ app/terms/page.tsx
+// app/terms/page.tsx
 'use client';
 
+import Head from 'next/head';
 import { motion } from 'framer-motion';
-
-export const metadata = {
-  title: 'Terms of Service | LostCryptoHelp',
-  description: 'Read the terms of using LostCryptoHelp — security scans, user data, and limitations.',
-};
 
 export default function TermsPage() {
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
-      className="min-h-screen py-20 px-6 bg-[var(--background)] text-[var(--foreground)]"
-    >
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold text-purple-400 mb-6">Terms of Service</h1>
+    <>
+      <Head>
+        <title>Terms of Service | LostCryptoHelp</title>
+        <meta
+          name="description"
+          content="Please read these terms before using LostCryptoHelp's crypto wallet scanning tools and services."
+        />
+      </Head>
 
-        <p className="mb-4 text-sm leading-relaxed text-gray-600 dark:text-gray-300">
-          By using LostCryptoHelp, you agree to the following terms:
-        </p>
+      <motion.section
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="min-h-screen py-20 px-6 bg-[var(--background)] text-[var(--foreground)]"
+      >
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-3xl font-bold text-purple-500 mb-6">Terms of Service</h1>
 
-        <ul className="list-disc pl-6 space-y-3 text-sm text-gray-700 dark:text-gray-300">
-          <li>LostCryptoHelp does not store your wallet data or private keys.</li>
-          <li>All scans are for informational purposes only and do not constitute financial advice.</li>
-          <li>Users are responsible for verifying scan results before making transactions.</li>
-          <li>LostCryptoHelp reserves the right to change pricing or features at any time.</li>
-          <li>We do not collect personal data unless voluntarily provided in reports.</li>
-          <li>TRON scans are free. BSC and ETH scans are pay-per-use and non-refundable.</li>
-          <li>PDF reports are generated client-side and never stored on our servers.</li>
-        </ul>
+          <p className="mb-6 text-sm leading-relaxed text-gray-700 dark:text-gray-300">
+            By accessing or using LostCryptoHelp, you agree to be bound by the following terms and conditions. Please read them carefully.
+          </p>
 
-        <p className="mt-6 text-xs text-gray-500 dark:text-gray-400">
-          Last updated: {new Date().toLocaleDateString()}
-        </p>
-      </div>
-    </motion.section>
+          <ul className="list-disc pl-6 space-y-4 text-sm text-gray-700 dark:text-gray-300">
+            <li><strong>No Financial Advice:</strong> LostCryptoHelp provides risk scores and insights for informational purposes only. We do not offer investment or financial advice. Users should make independent decisions before acting on any information.</li>
+
+            <li><strong>No Wallet Storage:</strong> We never store your private keys, seed phrases, or wallet login credentials. Wallet access is performed via read-only blockchain APIs.</li>
+
+            <li><strong>Privacy First:</strong> We do not collect personally identifiable information. Optional user-submitted data (e.g., for reports) is encrypted and automatically purged after delivery.</li>
+
+            <li><strong>Third-Party Integrations:</strong> LostCryptoHelp may use services such as GoPlus Security, blockchain explorers, or Telegram APIs. We do not control the accuracy or availability of external services and are not responsible for third-party data.</li>
+
+            <li><strong>Scan Accuracy & Liability:</strong> While we strive for accurate risk detection, blockchain data can change rapidly. We do not guarantee scan accuracy, completeness, or real-time results. Use at your own risk.</li>
+
+            <li><strong>Payment Terms:</strong> TRON scans are free. ETH and BSC scans use pay-per-scan credits. Payments are non-refundable once the scan is initiated.</li>
+
+            <li><strong>Intellectual Property:</strong> All content, code, and branding are the property of LostCryptoHelp and may not be copied, modified, or reused without permission.</li>
+
+            <li><strong>Prohibited Use:</strong> You agree not to use our platform for illegal, abusive, or fraudulent purposes, including phishing, data scraping, or violating blockchain terms.</li>
+
+            <li><strong>Modifications:</strong> We reserve the right to update these Terms of Service at any time. Continued use of the platform constitutes acceptance of the updated terms.</li>
+
+            <li><strong>Jurisdiction:</strong> LostCryptoHelp is governed by applicable international and cyber laws. Disputes may be subject to binding arbitration where legally permissible.</li>
+          </ul>
+
+          <p className="mt-8 text-xs text-gray-500 dark:text-gray-400">
+            Last updated: {new Date().toLocaleDateString()}
+          </p>
+        </div>
+      </motion.section>
+    </>
   );
 }
