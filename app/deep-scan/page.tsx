@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -14,8 +14,7 @@ const fees = {
 const paymentAddresses = {
   eth: '0xa85f4DDE28941e41633b575D3a026A8B42887795',
   bsc: '0xa85f4DDE28941e41633b575D3a026A8B42887795',
-  tron: 'TVH1roHbPn5qCj14Dy1GSVrB5XDcsjgEyX', 
-
+  tron: 'TVH1roHbPn5qCj14Dy1GSVrB5XDcsjgEyX',
 };
 
 export default function DeepScanPage() {
@@ -25,6 +24,7 @@ export default function DeepScanPage() {
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState('');
   const [showPayment, setShowPayment] = useState(false);
+  const [showJSON, setShowJSON] = useState(false);
   const router = useRouter();
 
   const isValidWallet = (addr: string) =>
@@ -166,15 +166,31 @@ export default function DeepScanPage() {
             </p>
             <p className="text-purple-300">Risk Score: {result.riskScore}</p>
             <p className="text-gray-400 text-xs">Wallet: {result.address}</p>
-            <hr className="border-gray-700 my-2" />
-            <p className="text-gray-400 font-medium">Last Transactions:</p>
-            <ul className="list-disc pl-5 space-y-1">
-              {result.transactions?.slice(0, 5).map((tx: any, idx: number) => (
-                <li key={idx}>
-                  <span className="text-green-400">{tx.symbol}</span> — {tx.amount} on {tx.date}
-                </li>
-              ))}
-            </ul>
+
+            <button
+              onClick={() => setShowJSON((prev) => !prev)}
+              className="mt-3 text-xs bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded"
+            >
+              {showJSON ? 'Hide JSON View' : 'Show Raw JSON'}
+            </button>
+
+            {showJSON ? (
+              <pre className="mt-4 text-green-300 bg-black rounded p-3 overflow-x-auto text-xs max-h-[400px]">
+                {JSON.stringify(result, null, 2)}
+              </pre>
+            ) : (
+              <>
+                <hr className="border-gray-700 my-2" />
+                <p className="text-gray-400 font-medium">Last Transactions:</p>
+                <ul className="list-disc pl-5 space-y-1">
+                  {result.transactions?.slice(0, 10).map((tx: any, idx: number) => (
+                    <li key={idx}>
+                      <span className="text-green-400">{tx.symbol}</span> — {tx.amount} on {tx.date}
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
           </div>
         )}
       </div>
