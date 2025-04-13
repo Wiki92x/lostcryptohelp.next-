@@ -17,8 +17,13 @@ export default function DeepScanPage() {
   const [error, setError] = useState('');
   const router = useRouter();
 
+  const isValidWallet = (addr: string) => /^0x[a-fA-F0-9]{40}$/.test(addr) || /^T[a-zA-Z0-9]{33,34}$/.test(addr);
+
   const handleScan = async () => {
-    if (!wallet) return;
+    if (!wallet || !isValidWallet(wallet)) {
+      setError('Enter a valid Ethereum, BSC, or TRON wallet address');
+      return;
+    }
 
     setScanning(true);
     setError('');
@@ -79,12 +84,25 @@ export default function DeepScanPage() {
           ← Back to Homepage
         </button>
 
-        {error && <div className="w-full bg-red-600 text-white p-2 rounded text-center">{error}</div>}
+        {error && (
+          <div className="w-full bg-red-600 text-white p-2 rounded text-center text-sm">{error}</div>
+        )}
 
         {result && (
-          <pre className="w-full text-sm bg-gray-800 text-green-400 p-4 rounded max-h-[400px] overflow-auto">
-            {JSON.stringify(result, null, 2)}
-          </pre>
+          <div className="w-full bg-gray-800 p-4 rounded max-h-[400px] overflow-auto text-sm space-y-2">
+            <p className="text-green-400 font-semibold">Scan Result: {result.chain}</p>
+            <p className="text-gray-300 text-xs">Wallet: {result.address}</p>
+            <p className="text-purple-300">Risk Score: {result.riskScore}</p>
+            <hr className="border-gray-700 my-2" />
+            <p className="text-gray-400">Top Transactions:</p>
+            <ul className="list-disc ml-5 space-y-1 text-gray-200">
+              {result.transactions?.slice(0, 5).map((tx: any, idx: number) => (
+                <li key={idx}>
+                  <span className="text-green-400 font-mono">{tx.symbol}</span> — {tx.amount} on {tx.date}
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
       </div>
     </div>
