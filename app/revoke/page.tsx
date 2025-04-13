@@ -15,16 +15,20 @@ export default function RevokePage() {
   const { revoking, revokeAccess, result, error } = useRevoke();
   const [approvals, setApprovals] = useState<ApprovalItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const [fetchError, setFetchError] = useState('');
 
   const fetchApprovals = async () => {
     if (!address) return;
     setLoading(true);
+    setFetchError('');
     try {
       const res = await fetch(`/api/approvals?wallet=${address}`);
+      if (!res.ok) throw new Error('Failed to fetch approvals');
       const data = await res.json();
       setApprovals(data || []);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      setFetchError(err.message || 'Something went wrong');
     } finally {
       setLoading(false);
     }
@@ -43,7 +47,17 @@ export default function RevokePage() {
       {!isConnected ? (
         <p className="text-red-400">Please connect your wallet to continue.</p>
       ) : loading ? (
-        <p>Loading approvals...</p>
+        <p>🔄 Loading approvals...</p>
+      ) : fetchError ? (
+        <div className="text-red-500">
+          {fetchError}
+          <button
+            onClick={fetchApprovals}
+            className="ml-4 underline text-purple-400"
+          >
+            Retry
+          </button>
+        </div>
       ) : approvals.length === 0 ? (
         <p className="text-green-400">✅ No active approvals found.</p>
       ) : (
@@ -57,7 +71,7 @@ export default function RevokePage() {
               <p><strong>Spender:</strong> {item.spender}</p>
               <p><strong>Token:</strong> {item.token}</p>
               <button
-                disabled={revoking}
+                disabled={revoking || !address}
                 onClick={() => revokeAccess(address!, 'eth')}
                 className="mt-3 px-4 py-2 bg-red-600 rounded hover:bg-red-700 disabled:opacity-50"
               >
