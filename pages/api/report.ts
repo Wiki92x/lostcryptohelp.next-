@@ -15,13 +15,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const chatId = process.env.VITE_TELEGRAM_CHAT_ID;
 
   if (!botToken || !chatId) {
-    return res.status(500).json({ error: 'Telegram credentials not configured' });
+    return res.status(500).json({ error: 'Telegram bot not configured' });
   }
 
-  const text = `🚨 *Suspicious Activity Reported*\n\n` +
-    `👤 *Name:* ${name || 'Anonymous'}\n` +
-    `🔗 *Wallet:* \`${wallet}\`\n\n` +
-    `📝 *Details:*\n${message}`;
+  const text = `🚨 *Suspicious Activity Reported*\n\n👤 *Name:* ${name || 'Anonymous'}\n🔗 *Wallet:* \`${wallet}\`\n📝 *Message:* ${message}`;
 
   try {
     const tgRes = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
@@ -30,13 +27,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       body: JSON.stringify({
         chat_id: chatId,
         text,
-        parse_mode: 'Markdown',
-      }),
+        parse_mode: 'Markdown'
+      })
     });
 
     const json = await tgRes.json();
     if (!json.ok) {
-      return res.status(500).json({ error: 'Telegram send failed', details: json.description });
+      return res.status(500).json({ error: 'Telegram error', detail: json.description });
     }
 
     return res.status(200).json({ success: true });
