@@ -2,7 +2,7 @@
 
 import { useAccount, useConnect, useDisconnect } from 'wagmi';
 import { InjectedConnector } from 'wagmi/connectors/injected';
-import { Button } from '@/components/ui/button'; // Assuming this now exists ✅
+import { Button } from '@/components/ui/button';
 
 export default function ConnectWalletButton() {
   const { address, isConnected } = useAccount();
@@ -21,7 +21,7 @@ export default function ConnectWalletButton() {
           <Button
             onClick={() => disconnect()}
             variant="outline"
-            className="text-red-500 border-red-500 hover:bg-red-600 hover:text-white"
+            className="border-red-500 text-red-500 hover:bg-red-600 hover:text-white transition px-4 py-2 text-sm rounded-xl"
           >
             Disconnect
           </Button>
@@ -30,9 +30,9 @@ export default function ConnectWalletButton() {
         <Button
           onClick={() => connect()}
           disabled={isLoading}
-          className="bg-purple-600 hover:bg-purple-700 text-white transition"
+          className="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-5 py-2 text-sm rounded-xl shadow transition-all duration-200"
         >
-          {isLoading ? 'Connecting...' : 'Connect Wallet'}
+          {isLoading ? 'Connecting...' : '🔗 Connect Wallet'}
         </Button>
       )}
     </div>
