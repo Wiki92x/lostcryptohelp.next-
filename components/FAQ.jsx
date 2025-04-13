@@ -1,26 +1,24 @@
-// ✅ components/FAQ.tsx
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const faqs = [
+const faqData = [
   {
-    question: 'Is LostCryptoHelp really free?',
-    answer: 'TRON scans are 100% free. Ethereum and BSC scans require a small crypto-native fee per scan to support infrastructure.',
+    question: 'Is this platform safe to use?',
+    answer: 'Yes, we never store your wallet data. Everything is analyzed client-side or via secure APIs.',
   },
   {
-    question: 'How does payment verification work?',
-    answer: 'After sending the required fee, the system verifies your transaction hash on-chain. Once confirmed, you can unlock full reports instantly.',
+    question: 'How do I get my PDF report?',
+    answer: 'After your scan, you can download the report instantly with a single click.',
   },
   {
-    question: 'Which blockchains are supported?',
-    answer: 'We currently support Ethereum (ETH), Binance Smart Chain (BSC), and TRON networks. More chains coming soon.',
+    question: 'Do I need to connect my wallet?',
+    answer: 'No wallet connection required. Just paste any public address and scan.',
   },
   {
-    question: 'Will I receive updates after submitting a report?',
-    answer: 'Yes. Telegram alerts are sent in real time. You can also manually re-check wallets using our scanner for updated results.',
+    question: 'What chains are supported?',
+    answer: 'Ethereum, Binance Smart Chain (BSC), and TRON are currently supported.',
   },
 ];
 
@@ -32,38 +30,27 @@ export default function FAQSection() {
   };
 
   return (
-    <section className="py-20 px-6 bg-[#0b0e14] text-white">
+    <section className="py-20 px-4 bg-black text-white">
       <div className="max-w-4xl mx-auto">
-        <h2 className="text-center text-3xl sm:text-4xl font-bold text-purple-500 mb-12">
-          Frequently Asked Questions
-        </h2>
-
+        <h2 className="text-3xl font-bold text-purple-500 text-center mb-10">Frequently Asked Questions</h2>
         <div className="space-y-4">
-          {faqs.map((item, i) => (
-            <div
-              key={i}
-              className="bg-zinc-900 border border-zinc-700 rounded-xl overflow-hidden"
-            >
+          {faqData.map((item, i) => (
+            <div key={i} className="border border-zinc-700 rounded-lg overflow-hidden">
               <button
                 onClick={() => toggle(i)}
-                className="w-full text-left flex justify-between items-center p-5 font-medium text-lg text-purple-400 hover:bg-zinc-800 transition"
+                className="w-full text-left px-5 py-4 bg-zinc-900 hover:bg-zinc-800 focus:outline-none flex justify-between items-center"
               >
-                <span>{item.question}</span>
-                <ChevronDown
-                  className={`w-5 h-5 transform transition-transform ${
-                    openIndex === i ? 'rotate-180' : ''
-                  }`}
-                />
+                <span className="text-lg font-medium text-purple-300">{item.question}</span>
+                <span className="text-xl text-purple-400">{openIndex === i ? '−' : '+'}</span>
               </button>
-
-              <AnimatePresence initial={false}>
+              <AnimatePresence>
                 {openIndex === i && (
                   <motion.div
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
                     transition={{ duration: 0.3 }}
-                    className="px-5 pb-5 text-gray-300 text-sm leading-relaxed"
+                    className="px-5 py-3 text-sm text-gray-300 bg-zinc-800"
                   >
                     {item.answer}
                   </motion.div>
