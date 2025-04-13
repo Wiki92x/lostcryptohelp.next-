@@ -1,159 +1,172 @@
-// app/deep-scan/page.tsx
-'use client';
+// ✅ pages/api/deepscan.ts
+import type { NextApiRequest, NextApiResponse } from 'next';
+import fetch from 'node-fetch';
 
-import { useState } from 'react';
-import { Loader2, ShieldCheck, FileWarning, FileJson } from 'lucide-react';
-import toast from 'react-hot-toast';
-
-const chains = [
-  { id: 'eth', name: 'Ethereum ($1.5)' },
-  { id: 'bsc', name: 'Binance Smart Chain ($0.5)' },
-  { id: 'tron', name: 'TRON (Free)' },
+const WHITELIST = [
+  '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
+  '0x0d8775f648430679a709e98d2b0cb6250d2887ef',
+  'TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf',
 ];
 
-export default function DeepScanPage() {
-  const [wallet, setWallet] = useState('');
-  const [chain, setChain] = useState('eth');
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<any>(null);
-  const [error, setError] = useState('');
-  const [showJson, setShowJson] = useState(false);
+const RISK_WEIGHTS: Record<string, number> = {
+  is_honeypot: 25,
+  can_take_back_ownership: 20,
+  hidden_owner: 15,
+  slippage_modifiable: 10,
+  owner_change_disabled: 10,
+  trading_cooldown: 5,
+};
 
-  const scanWallet = async () => {
-    setLoading(true);
-    setError('');
-    setResult(null);
+function calculateRiskScore(riskFlags: Record<string, string>): number {
+  let total = 0;
+  for (const [flag, weight] of Object.entries(RISK_WEIGHTS)) {
+    if (riskFlags[flag] === '1') total += weight;
+  }
+  return Math.min(total, 100);
+}
 
-    try {
-      const res = await fetch('/api/deepscan', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ wallet, chain }),
-      });
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+): Promise<void> {
+  if (req.method !== 'POST') {
+    res.status(405).json({ error: 'Method not allowed' });
+    return;
+  }
 
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || 'Scan failed');
-        toast.error(data.error || 'Scan failed');
-        return;
-      }
+  const { wallet, chain } = req.body;
 
-      setResult(data);
-    } catch (err) {
-      toast.error('Scan error');
-      setError('Unexpected error occurred.');
-    } finally {
-      setLoading(false);
-    }
+  if (!wallet || !chain) {
+    res.status(400).json({ error: 'Missing wallet or chain' });
+    return;
+  }
+
+  const apiKeys: Record<string, string> = {
+    eth: process.env.ETHERSCAN_API_KEY || '',
+    bsc: process.env.BSCSCAN_API_KEY || '',
+    tron: '',
   };
 
-  return (
-    <div className="max-w-3xl mx-auto py-10 px-4 text-white">
-      <h1 className="text-3xl font-bold text-center text-purple-400 mb-6">Deep Wallet Scanner</h1>
+  const baseUrls: Record<string, string> = {
+    eth: 'https://api.etherscan.io/api',
+    bsc: 'https://api.bscscan.com/api',
+    tron: 'https://apilist.tronscan.org/api/transaction',
+  };
 
-      <select
-        className="w-full mb-4 px-4 py-2 bg-zinc-900 border border-zinc-700 rounded"
-        value={chain}
-        onChange={(e) => setChain(e.target.value)}
-      >
-        {chains.map((c) => (
-          <option key={c.id} value={c.id}>{c.name}</option>
-        ))}
-      </select>
+  const isWhitelisted = WHITELIST.includes(wallet);
+  const requiresPayment = chain !== 'tron' && !isWhitelisted;
 
-      <input
-        type="text"
-        value={wallet}
-        onChange={(e) => setWallet(e.target.value)}
-        placeholder="0x... or TRON address"
-        className="w-full mb-4 px-4 py-2 bg-zinc-900 border border-zinc-700 rounded"
-      />
+  if (requiresPayment) {
+    res.status(402).json({
+      error: 'Payment required for scan',
+      payment: {
+        eth: '0xa85f4DDE28941e41633b575D3a026A8B42887795',
+        bsc: '0xa85f4DDE28941e41633b575D3a026A8B42887795',
+        amount: chain === 'eth' ? '1.5' : '0.5',
+        currency: chain.toUpperCase(),
+      },
+    });
+    return;
+  }
 
-      <button
-        onClick={scanWallet}
-        disabled={loading}
-        className="w-full py-2 bg-purple-600 hover:bg-purple-700 rounded font-semibold"
-      >
-        {loading ? <Loader2 className="animate-spin mx-auto" /> : 'Start Deep Scan'}
-      </button>
+  try {
+    if (chain === 'tron') {
+      const tronRes = await fetch(
+        `${baseUrls.tron}?sort=-timestamp&count=true&limit=50&start=0&address=${wallet}`
+      );
+      const data = await tronRes.json();
 
-      <button
-        onClick={() => window.location.href = '/'}
-        className="w-full mt-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded text-sm"
-      >
-        ← Back to Homepage
-      </button>
+      const transactions = data.data.slice(0, 50).map((tx: any) => ({
+        date: tx.block_timestamp?.split(' ')[0],
+        transactionId: tx.hash,
+        amount: tx.amount,
+        token: tx.tokenInfo?.tokenName || 'Unknown',
+        symbol: tx.tokenInfo?.tokenSymbol || '',
+        risk_flags: {},
+        riskScore: 0,
+      }));
 
-      {error && (
-        <div className="bg-red-800 mt-6 text-center py-2 rounded">
-          ❌ {error}
-        </div>
-      )}
+      res.status(200).json({
+        address: wallet,
+        chain: 'TRON',
+        riskScore: 'Preview Only — Full Report Requires Upgrade',
+        transactions,
+      });
+      return;
+    }
 
-      {result && (
-        <div className="mt-6 border border-zinc-700 bg-zinc-900 rounded p-4">
-          <div className="flex items-center mb-4">
-            <ShieldCheck className="text-green-400 mr-2" />
-            <span className="text-green-400 font-medium">{result.chain} scan complete</span>
-          </div>
-          <div className="text-sm text-zinc-300 mb-2">
-            <div><strong>Risk Score:</strong> {result.riskScore}</div>
-            <div><strong>Wallet:</strong> {result.address}</div>
-          </div>
+    const url = `${baseUrls[chain]}?module=account&action=tokentx&address=${wallet}&startblock=0&endblock=99999999&sort=desc&apikey=${apiKeys[chain]}`;
+    const response = await fetch(url);
+    const data = await response.json();
 
-          <div className="flex gap-3 mt-3 mb-3">
-            <button
-              className="bg-zinc-800 hover:bg-zinc-700 text-xs px-3 py-1 rounded flex items-center gap-1"
-              onClick={() => setShowJson(!showJson)}
-            >
-              <FileJson size={14} /> {showJson ? 'Hide' : 'Show'} Raw JSON
-            </button>
-            <a
-              href={`https://lostcryptohelp.pro/api/generate-pdf?wallet=${result.address}`}
-              target="_blank"
-              className="bg-green-700 hover:bg-green-600 text-xs px-3 py-1 rounded flex items-center gap-1"
-            >
-              🧾 Download PDF Report
-            </a>
-          </div>
+    if (data.status !== '1') {
+      res.status(500).json({ error: 'Scan failed', message: data.message });
+      return;
+    }
 
-          {showJson && (
-            <pre className="text-xs bg-black p-3 rounded overflow-x-auto text-green-300 mt-4">
-              {JSON.stringify(result, null, 2)}
-            </pre>
-          )}
+    const transfers: {
+      date: string;
+      transactionId: string;
+      amount: string;
+      token: string;
+      symbol: string;
+      risk_flags: Record<string, string>;
+      riskScore: number;
+    }[] = [];
 
-          <div className="mt-5 border-t pt-4 text-sm">
-            <h3 className="text-lg font-semibold text-purple-300 mb-2">Scan Summary</h3>
-            <div className="mb-1">
-              <strong>Top Token by Risk:</strong> {result.transactions?.[0]?.symbol || 'N/A'} ({result.riskScore})
-            </div>
-            <div>
-              <strong>Most Active Token:</strong> {result.transactions?.[0]?.symbol || 'N/A'}
-            </div>
+    const topTransfers = data.result.slice(0, 100);
 
-            <div className="mt-4 text-sm text-zinc-300">
-              <p><strong>AI Analysis</strong></p>
-              <p className="text-xs mt-1">
-                This wallet shows {result.transactions?.length}+ transactions. All reviewed token behavior in top tokens and risk scores were generated accordingly.
-              </p>
-            </div>
+    for (const tx of topTransfers) {
+      const contract = tx.contractAddress?.toLowerCase();
 
-            <div className="mt-4">
-              <h4 className="font-semibold mb-2">Last Transactions:</h4>
-              <ul className="text-xs space-y-1">
-                {result.transactions?.slice(0, 10).map((tx: any, i: number) => (
-                  <li key={i} className="flex justify-between bg-zinc-800 px-3 py-2 rounded">
-                    <span className="text-green-400">{tx.symbol}</span>
-                    <span>{tx.amount} on {tx.date}</span>
-                    <span className="text-xs bg-green-700 px-2 py-0.5 rounded text-white">SAFE</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
+      const riskRes = await fetch(
+        `https://api.gopluslabs.io/api/v1/token_security/1?contract_addresses=${contract}`
+      );
+      const riskData = await riskRes.json();
+      const riskFlags = riskData.result?.[contract] || {};
+      const tokenRiskScore = calculateRiskScore(riskFlags);
+
+      transfers.push({
+        date: new Date(parseInt(tx.timeStamp) * 1000).toISOString().split('T')[0],
+        transactionId: tx.hash,
+        amount: (parseFloat(tx.value) / 10 ** parseInt(tx.tokenDecimal)).toFixed(4),
+        token: tx.tokenName,
+        symbol: tx.tokenSymbol,
+        risk_flags: riskFlags,
+        riskScore: tokenRiskScore,
+      });
+    }
+
+    const averageScore = Math.round(
+      transfers.reduce((sum, t) => sum + (t.riskScore || 0), 0) / transfers.length
+    );
+
+    const topToken = transfers.reduce((acc, tx) => {
+      acc[tx.symbol] = (acc[tx.symbol] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    const mostActive = Object.entries(topToken).sort((a, b) => b[1] - a[1])[0][0];
+
+    await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/telegram-report`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        wallet,
+        chain: chain.toUpperCase(),
+        riskScore: `${averageScore}/100`,
+        topToken: mostActive,
+        txCount: transfers.length,
+      }),
+    });
+
+    res.status(200).json({
+      address: wallet,
+      chain: chain.toUpperCase(),
+      riskScore: `${averageScore}/100`,
+      transactions: transfers.slice(0, 100),
+    });
+  } catch (err: any) {
+    console.error('[DeepScan Error]', err);
+    res.status(500).json({ error: 'Internal Server Error', details: err.message });
+  }
 }
