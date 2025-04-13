@@ -26,20 +26,18 @@ export default function DashboardPage() {
         <h1 className="text-3xl font-bold text-purple-500 mb-2">Your Dashboard</h1>
         <p className="text-gray-400 mb-8">
           Welcome back{' '}
-          {isConnected ? (
-            <span className="text-green-400 font-mono">{address}</span>
-          ) : (
-            <span className="italic text-yellow-500">degen</span>
-          )}
+          <span className={isConnected ? 'text-green-400 font-mono' : 'italic text-yellow-500'}>
+            {isConnected ? address : 'degen'}
+          </span>
           .
         </p>
 
-        <div className="bg-gray-900 p-6 rounded-xl border border-purple-600 shadow-md">
+        <div className="bg-zinc-900 p-6 rounded-xl border border-purple-600 shadow-md">
           <h2 className="text-xl font-semibold mb-4 text-purple-400">Recent Scans</h2>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm border-collapse">
-              <thead className="text-gray-400 border-b border-gray-700">
+              <thead className="text-gray-400 border-b border-zinc-700">
                 <tr>
                   <th className="py-2 pr-4">Wallet</th>
                   <th className="py-2 pr-4">Chain</th>
@@ -49,7 +47,7 @@ export default function DashboardPage() {
               </thead>
               <tbody>
                 {mockHistory.map((item, idx) => (
-                  <tr key={idx} className="border-t border-gray-800">
+                  <tr key={idx} className="border-t border-zinc-800">
                     <td className="py-2 pr-4 font-mono">{item.wallet}</td>
                     <td className="py-2 pr-4">{item.chain}</td>
                     <td
@@ -66,8 +64,8 @@ export default function DashboardPage() {
             </table>
           </div>
 
-          <div className="mt-6 text-sm text-gray-500">
-            🚧 More features coming soon: download reports, saved wallets, alert toggles...
+          <div className="mt-6 text-sm text-zinc-500">
+            🚧 Coming soon: detailed reports, saved wallets, alert controls, and AI trace summaries.
           </div>
         </div>
       </div>
