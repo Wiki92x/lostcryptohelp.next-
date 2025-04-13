@@ -10,9 +10,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className="bg-black text-white">
         <ClientOnly>
-          <WagmiConfig config={wagmiConfig}>
-            {children}
-          </WagmiConfig>
+          <WagmiConfig config={wagmiConfig}>{children}</WagmiConfig>
         </ClientOnly>
       </body>
     </html>
