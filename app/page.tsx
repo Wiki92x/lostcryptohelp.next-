@@ -9,6 +9,7 @@ import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { getWalletConfig } from '@/lib/walletConfig';
 import { WagmiConfig, type Config } from 'wagmi';
+
 const [config, setConfig] = useState<Config | null>(null);
 
 export default function HomePage() {
