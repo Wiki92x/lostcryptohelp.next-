@@ -7,7 +7,7 @@ import { mainnet, bsc, polygon } from 'wagmi/chains';
 
 const { publicClient } = configureChains(
   [mainnet, bsc, polygon],
-  [publicProvider()]
+  [publicProvider()] // ✅ DO NOT include `http()` here
 );
 
 const config = createConfig({
