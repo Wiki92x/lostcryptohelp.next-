@@ -1,4 +1,4 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
+import { NextRequest } from 'next/server';
 import fetch from 'node-fetch';
 
 const RECEIVERS = {
@@ -11,11 +11,13 @@ const PRICES = {
   eth: 10,
 };
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') return res.status(405).end();
+export async function POST(req: NextRequest) {
+  const body = await req.json();
+  const { txHash, chain, wallet } = body;
 
-  const { txHash, chain, wallet } = req.body;
-  if (!txHash || !wallet || !RECEIVERS[chain]) return res.status(400).json({ error: 'Missing parameters' });
+  if (!txHash || !wallet || !RECEIVERS[chain]) {
+    return new Response(JSON.stringify({ error: 'Missing parameters' }), { status: 400 });
+  }
 
   try {
     const url =
@@ -30,14 +32,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const from = data.result.from?.toLowerCase();
     const value = parseInt(data.result.value, 16) / 1e18;
 
-    if (to !== RECEIVERS[chain].toLowerCase()) throw new Error('Payment not sent to correct address');
-    if (from !== wallet.toLowerCase()) throw new Error('Sender wallet mismatch');
+    if (to !== RECEIVERS[chain].toLowerCase()) throw new Error('Incorrect recipient');
+    if (from !== wallet.toLowerCase()) throw new Error('Sender mismatch');
     if (value < PRICES[chain]) throw new Error('Insufficient amount');
 
-    // Optional: save membership to DB here
-
-    return res.status(200).json({ success: true, message: 'Verified' });
+    return new Response(JSON.stringify({ success: true, message: 'Verified' }), { status: 200 });
   } catch (err: any) {
-    return res.status(500).json({ error: err.message || 'Verification failed' });
+    return new Response(JSON.stringify({ error: err.message || 'Verification failed' }), { status: 500 });
   }
 }
