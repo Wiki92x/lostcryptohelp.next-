@@ -9,10 +9,10 @@ import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { getWalletConfig } from '@/lib/walletConfig';
 import { WagmiConfig, Config } from 'wagmi';
-import { PublicClient, WebSocketPublicClient } from 'viem';
+import { PublicClient } from 'viem';
 
 export default function HomePage() {
-  const [config, setConfig] = useState<Config<PublicClient, WebSocketPublicClient> | null>(null);
+  const [config, setConfig] = useState<Config<PublicClient, any> | null>(null);
 
   useEffect(() => {
     const cfg = getWalletConfig();
@@ -20,8 +20,6 @@ export default function HomePage() {
   }, []);
 
   if (!config) return null;
-    
-  
 
   return (
     <WagmiConfig config={config}>
@@ -29,7 +27,6 @@ export default function HomePage() {
         <HeroSection />
         <WhyUsSection />
         <HowItWorks />
-
         <motion.section
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -51,7 +48,6 @@ export default function HomePage() {
             </Link>
           </div>
         </motion.section>
-
         <FAQ />
       </main>
     </WagmiConfig>
