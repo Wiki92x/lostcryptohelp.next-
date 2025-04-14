@@ -2,7 +2,8 @@
 
 import { useEffect } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { pageview } from './lib/ga';
+import { pageview } from '@/lib/ga';
+
 
 export default function Analytics() {
   const pathname = usePathname();
