@@ -1,10 +1,7 @@
 [build]
 command = "npm run build"
 publish = ".next"
-environment = { 
-  NODE_VERSION = "18", 
-  NEXT_USE_NETLIFY_EDGE = "true" 
-}
+environment = { NODE_VERSION = "18", NEXT_USE_NETLIFY_EDGE = "true" }
 
 [functions]
 directory = "netlify/functions"
