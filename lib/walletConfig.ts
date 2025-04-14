@@ -6,7 +6,7 @@ import { publicProvider } from 'wagmi/providers/public';
 export function getWalletConfig() {
   const { publicClient, webSocketPublicClient } = configureChains(
     [mainnet, bsc, polygon],
-    [publicProvider()] // avoid using broken/undefined providers at build
+    [publicProvider()]
   );
 
   return createConfig({
