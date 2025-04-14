@@ -1,28 +1,19 @@
-// ✅ app/layout.tsx
-import '@/styles/globals.css';
-import { WagmiConfig } from 'wagmi';
-import wagmiConfig from '@/lib/wagmiClient';
-import ThemeProviderWrapper from '@/components/ThemeProviderWrapper';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer'; // <- ✅ Add this
+<head>
+  <title>LostCryptoHelp – Protect Your Wallet from Scams</title>
+  <meta name="description" content="Scan your crypto wallet for scam tokens, phishing contracts, and suspicious activity. No KYC. No signup." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://lostcryptohelp.pro" />
 
-export const metadata = {
-  title: 'LostCryptoHelp',
-  description: 'Scan wallets, detect scams, protect crypto',
-};
+  {/* Open Graph */}
+  <meta property="og:title" content="LostCryptoHelp – Protect Your Wallet from Scams" />
+  <meta property="og:description" content="Scan your crypto wallet for scam tokens, phishing contracts, and suspicious activity. No KYC. No signup." />
+  <meta property="og:url" content="https://lostcryptohelp.pro" />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="https://lostcryptohelp.pro/og-banner.png" />
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="en" suppressHydrationWarning>
-      <body className="bg-[var(--background)] text-[var(--foreground)] transition-colors duration-300">
-        <ThemeProviderWrapper>
-          <WagmiConfig config={wagmiConfig}>
-            <Navbar />
-            <main className="pt-20 px-4">{children}</main>
-            <Footer /> {/* ✅ Add this line */}
-          </WagmiConfig>
-        </ThemeProviderWrapper>
-      </body>
-    </html>
-  );
-}
+  {/* Twitter */}
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="LostCryptoHelp – Protect Your Wallet from Scams" />
+  <meta name="twitter:description" content="Scan your crypto wallet for scam tokens, phishing contracts, and suspicious activity. No KYC. No signup." />
+  <meta name="twitter:image" content="https://lostcryptohelp.pro/og-banner.png" />
+</head>
