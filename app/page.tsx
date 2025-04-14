@@ -1,24 +1,27 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { WagmiConfig } from 'wagmi';
-import { getWalletConfig } from '@/lib/wallet';
-
 import HeroSection from '@/components/HeroSection';
 import WhyUsSection from '@/components/WhyUsSection';
 import HowItWorks from '@/components/HowItWorks';
 import FAQ from '@/components/FAQ';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import { getWalletConfig } from '@/lib/walletConfig';
+import { WagmiConfig, Config } from 'wagmi';
+import { PublicClient, WebSocketPublicClient } from 'viem';
 
 export default function HomePage() {
-  const [config, setConfig] = useState(null);
+  const [config, setConfig] = useState<Config<PublicClient, WebSocketPublicClient> | null>(null);
 
   useEffect(() => {
-    setConfig(getWalletConfig());
+    const cfg = getWalletConfig();
+    setConfig(cfg);
   }, []);
 
   if (!config) return null;
+    
+  
 
   return (
     <WagmiConfig config={config}>
