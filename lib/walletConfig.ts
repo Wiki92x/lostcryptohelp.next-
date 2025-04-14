@@ -1,17 +1,17 @@
 // lib/walletConfig.ts
+'use client';
+
 import { configureChains, createConfig } from 'wagmi';
 import { mainnet, bsc, polygon } from 'wagmi/chains';
 import { publicProvider } from 'wagmi/providers/public';
 
-export function getWalletConfig() {
-  const { publicClient, webSocketPublicClient } = configureChains(
-    [mainnet, bsc, polygon],
-    [publicProvider()]
-  );
+const isSSR = typeof window === 'undefined';
 
-  return createConfig({
-    autoConnect: true,
-    publicClient,
-    webSocketPublicClient,
-  });
-}
+export const walletConfig = !isSSR
+  ? createConfig(
+      configureChains(
+        [mainnet, bsc, polygon],
+        [publicProvider()]
+      )
+    )
+  : null;
