@@ -1,4 +1,4 @@
-import './globals.css'; // ✅ Make sure this file exists
+import '../styles/globals.css'; // ✅ Correct path for your setup
 
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
