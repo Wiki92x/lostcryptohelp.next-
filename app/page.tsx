@@ -8,8 +8,8 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { getWalletConfig } from '@/lib/walletConfig';
+import { WagmiConfig, type Config } from 'wagmi';
 const [config, setConfig] = useState<Config | null>(null);
-import { PublicClient } from 'viem';
 
 export default function HomePage() {
   const [config, setConfig] = useState<Config<PublicClient, any> | null>(null);
