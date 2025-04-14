@@ -1,0 +1,17 @@
+'use client';
+
+import { configureChains, createConfig } from 'wagmi';
+import { mainnet, bsc, polygon } from 'wagmi/chains';
+import { publicProvider } from 'wagmi/providers/public';
+
+export function getWalletConfig() {
+  const { chains, publicClient } = configureChains(
+    [mainnet, bsc, polygon],
+    [publicProvider()]
+  );
+
+  return createConfig({
+    autoConnect: true,
+    publicClient,
+  });
+}
