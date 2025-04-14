@@ -7,15 +7,14 @@ import FAQ from '@/components/FAQ';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import { getWalletConfig } from '@/lib/walletConfig';
+import { walletConfig } from '@/lib/walletConfig'; // ✅ FIXED
 import { WagmiConfig, type Config } from 'wagmi';
 
 export default function HomePage() {
   const [config, setConfig] = useState<Config | null>(null);
 
   useEffect(() => {
-    const cfg = getWalletConfig();
-    setConfig(cfg);
+    setConfig(walletConfig); // ✅ FIXED
   }, []);
 
   if (!config) return null;
