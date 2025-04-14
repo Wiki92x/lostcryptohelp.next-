@@ -3,12 +3,11 @@
 
 import { WagmiConfig, createConfig, configureChains } from 'wagmi';
 import { publicProvider } from 'wagmi/providers/public';
-import { http } from 'viem';
 import { mainnet, bsc, polygon } from 'wagmi/chains';
 
 const { publicClient } = configureChains(
   [mainnet, bsc, polygon],
-  [publicProvider(), http()]
+  [publicProvider()]
 );
 
 const config = createConfig({
