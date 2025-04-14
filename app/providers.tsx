@@ -1,15 +1,17 @@
+// app/providers.tsx
 'use client';
 
-import { useEffect } from 'react';
-import { usePathname } from 'next/navigation';
-import { pageview } from '@/lib/ga';
+import { WagmiConfig, createConfig, configureChains } from 'wagmi';
+import { publicProvider } from 'wagmi/providers/public';
+import { mainnet, bsc, polygon } from 'wagmi/chains';
 
-export default function Providers() {
-  const pathname = usePathname();
+const { publicClient } = configureChains([mainnet, bsc, polygon], [publicProvider()]);
 
-  useEffect(() => {
-    if (pathname) pageview(pathname);
-  }, [pathname]);
+const config = createConfig({
+  autoConnect: true,
+  publicClient,
+});
 
-  return null;
+export function Providers({ children }: { children: React.ReactNode }) {
+  return <WagmiConfig config={config}>{children}</WagmiConfig>;
 }
