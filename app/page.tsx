@@ -10,10 +10,8 @@ import { useEffect, useState } from 'react';
 import { getWalletConfig } from '@/lib/walletConfig';
 import { WagmiConfig, type Config } from 'wagmi';
 
-const [config, setConfig] = useState<Config | null>(null);
-
 export default function HomePage() {
-  const [config, setConfig] = useState<Config<PublicClient, any> | null>(null);
+  const [config, setConfig] = useState<Config | null>(null);
 
   useEffect(() => {
     const cfg = getWalletConfig();
@@ -28,6 +26,7 @@ export default function HomePage() {
         <HeroSection />
         <WhyUsSection />
         <HowItWorks />
+
         <motion.section
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -49,6 +48,7 @@ export default function HomePage() {
             </Link>
           </div>
         </motion.section>
+
         <FAQ />
       </main>
     </WagmiConfig>
