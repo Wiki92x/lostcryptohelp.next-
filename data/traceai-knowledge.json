@@ -1,0 +1,96 @@
+// ✅ /data/traceai-knowledge.json — Your Service Knowledgebase
+[
+    {
+      "id": "scanner",
+      "title": "Wallet Deep Scanner",
+      "content": "Scans wallets on Ethereum, BSC, and TRON to detect scam tokens, malicious contracts, approvals, and rugpull risks. Generates AI report, PDF, and Telegram alert."
+    },
+    {
+      "id": "revoke",
+      "title": "Token Revoker",
+      "content": "Revokes dangerous token approvals from wallets to prevent further damage. Supports ETH/BSC/Polygon."
+    },
+    {
+      "id": "claim",
+      "title": "Lost Funds Claim Assistant",
+      "content": "Automatically drafts case reports for lost or scammed crypto. Helps users generate legal-style claims and scam summaries."
+    },
+    {
+      "id": "monitor",
+      "title": "Wallet Monitor + Alerts",
+      "content": "Watches wallet in real-time. Sends Telegram alerts on risky behavior, approvals, token drains, etc."
+    },
+    {
+      "id": "tax",
+      "title": "Crypto Tax Report",
+      "content": "Generates country-specific crypto tax reports (PDF/XML) from wallet history, useful for tax season."
+    },
+    {
+      "id": "reputation",
+      "title": "Web3 Reputation Score",
+      "content": "Gives wallets an on-chain trust score using AI. Helps users build a provable clean reputation in crypto."
+    }
+  ]
+  
+  // ✅ /lib/traceaiRetriever.ts
+  import fs from 'fs/promises';
+  import { createStuffDocumentsChain } from 'langchain/chains/combine_documents';
+  import { ChatOllama } from 'langchain/chat_models/ollama';
+  import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
+  import { MemoryVectorStore } from 'langchain/vectorstores/memory';
+  import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
+  import { Document } from 'langchain/document';
+  
+  export async function getTraceAIDocRetriever() {
+    const file = await fs.readFile('./data/traceai-knowledge.json', 'utf8');
+    const items = JSON.parse(file);
+  
+    const rawDocs = items.map(
+      (item: any) =>
+        new Document({
+          pageContent: `${item.title}\n${item.content}`,
+          metadata: { id: item.id }
+        })
+    );
+  
+    const splitter = new RecursiveCharacterTextSplitter({ chunkSize: 300, chunkOverlap: 50 });
+    const splitDocs = await splitter.splitDocuments(rawDocs);
+  
+    const store = await MemoryVectorStore.fromDocuments(splitDocs, new OpenAIEmbeddings());
+    return store.asRetriever();
+  }
+  
+  // ✅ /pages/api/traceai.ts — Smart RAG Endpoint for TraceAI
+  import type { NextApiRequest, NextApiResponse } from 'next';
+  import { getTraceAIDocRetriever } from '@/lib/traceaiRetriever';
+  import { ChatOllama } from 'langchain/chat_models/ollama';
+  import { RunnableSequence } from 'langchain/schema/runnable';
+  import { StringOutputParser } from 'langchain/schema/output_parser';
+  import { PromptTemplate } from 'langchain/prompts';
+  
+  export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+    if (req.method !== 'POST') return res.status(405).end();
+  
+    const { message } = req.body;
+    if (!message) return res.status(400).json({ error: 'Message required' });
+  
+    const retriever = await getTraceAIDocRetriever();
+    const contextDocs = await retriever.getRelevantDocuments(message);
+    const contextText = contextDocs.map(d => d.pageContent).join('\n---\n');
+  
+    const prompt = PromptTemplate.fromTemplate(`You are TraceAI, a helpful crypto assistant for the LostCryptoHelp platform. Only answer based on the context below. If the user asks about unrelated things, politely decline.\n\nContext:\n{context}\n\nUser: {question}\nTraceAI:`);
+  
+    const chain = RunnableSequence.from([
+      {
+        context: async () => contextText,
+        question: (input: any) => input.message
+      },
+      prompt,
+      new ChatOllama({ model: 'llama3', temperature: 0 }),
+      new StringOutputParser()
+    ]);
+  
+    const final = await chain.invoke({ message });
+    return res.status(200).json({ reply: final });
+  }
+  

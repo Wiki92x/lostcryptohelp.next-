@@ -1,0 +1,90 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* === Theme Tokens === */
+:root {
+  --foreground: 0 0% 10%;
+  --background: 0 0% 100%;
+  --primary-color: 59 130 246;       /* Tailwind blue-500 */
+  --accent-color: 37 99 235;         /* Tailwind blue-600 */
+  --glow-gradient: conic-gradient(
+    from 180deg at 50% 50%,
+    #3b82f680 0deg,
+    #2563eb80 180deg,
+    #3b82f680 360deg
+  );
+}
+
+.dark {
+  --foreground: 0 0% 95%;
+  --background: 0 0% 5%;
+}
+
+.dim {
+  --foreground: 240 6% 85%;
+  --background: 240 6% 10%;
+}
+
+/* === Base Layer === */
+@layer base {
+  body {
+    @apply bg-[hsl(var(--background))] text-[hsl(var(--foreground))] min-h-screen m-0;
+  }
+}
+   
+    
+
+
+/* === Glow Button === */
+.glow-button {
+  @apply relative overflow-hidden px-8 py-4 rounded-xl font-semibold;
+  background: rgb(var(--primary-color));
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.glow-button::before {
+  content: '';
+  @apply absolute -top-1/2 -left-1/2 w-[200%] h-[200%];
+  background: var(--glow-gradient);
+  animation: rotate 3s linear infinite;
+  z-index: 0;
+}
+
+.glow-button span {
+  @apply relative z-10;
+}
+
+.glow-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 40px rgba(var(--primary-color), 0.4);
+}
+
+.glow-button:active {
+  transform: scale(0.98);
+}
+
+@supports not (background: conic-gradient()) {
+  .glow-button {
+    box-shadow: 0 0 25px rgba(var(--primary-color), 0.4);
+  }
+}
+
+/* === Animations === */
+@keyframes rotate {
+  100% { transform: rotate(360deg); }
+}
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
+}
+
+/* === Utilities === */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .gradient-mask {
+    mask-image: linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%);
+  }
+}

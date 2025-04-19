@@ -1,0 +1,39 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+contract ReputationBadge is ERC721URIStorage, Ownable {
+    uint256 public nextTokenId = 1;
+    mapping(address => bool) public hasMinted;
+
+    event BadgeMinted(address indexed user, uint256 tokenId, uint256 score);
+
+    constructor() ERC721("ReputationBadge", "REPB") Ownable(msg.sender) {}
+
+    // ✅ Soulbound: disables transfers (mint-only)
+    function _update(address to, uint256 tokenId, address auth) 
+        internal 
+        override 
+        returns (address) 
+    {
+        address from = _ownerOf(tokenId);
+        require(from == address(0) || to == address(0), "Soulbound: non-transferable");
+        return super._update(to, tokenId, auth);
+    }
+
+    function mintBadge(address to, uint256 score, string memory metadataURI) external onlyOwner {
+        require(!hasMinted[to], "Already claimed");
+        require(score > 0, "Invalid score");
+
+        uint256 tokenId = nextTokenId;
+        _safeMint(to, tokenId);
+        _setTokenURI(tokenId, metadataURI);
+
+        hasMinted[to] = true;
+        nextTokenId++;
+
+        emit BadgeMinted(to, tokenId, score);
+    }
+}

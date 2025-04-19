@@ -1,0 +1,33 @@
+'use client';
+
+import { useTheme } from 'next-themes';
+import { useEffect, useState } from 'react';
+
+const themes = ['light', 'dim', 'dark'] as const;
+
+export default function ThemeModeToggle() {
+  const { setTheme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
+  return (
+    <div className="relative ml-4">
+      <select
+        value={resolvedTheme}
+        onChange={(e) => setTheme(e.target.value)}
+        className="bg-zinc-900 text-white border border-zinc-600 px-3 py-1 rounded-lg text-sm"
+      >
+        {themes.map((mode) => (
+          <option key={mode} value={mode}>
+            {mode === 'light' ? '🌞 Light' : mode === 'dim' ? '🌓 Dim' : '🌙 Dark'}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
