@@ -11,6 +11,7 @@ const { chains, publicClient } = configureChains(
 
 export const walletConfig = createConfig({
   autoConnect: true,
+  connectors: [], // You can add MetaMask, WalletConnect, etc., here if needed
   publicClient,
 });
 

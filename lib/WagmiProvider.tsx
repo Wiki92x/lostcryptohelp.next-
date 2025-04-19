@@ -1,7 +1,6 @@
-// ✅ lib/WagmiProvider.tsx
 'use client';
 
-import { WagmiConfig, configureChains, createConfig } from 'wagmi';
+import { WagmiConfig, createConfig, configureChains } from 'wagmi';
 import { mainnet, bsc, polygon, arbitrum, optimism } from 'wagmi/chains';
 import { publicProvider } from 'wagmi/providers/public';
 
@@ -12,7 +11,8 @@ const { chains, publicClient } = configureChains(
 
 const wagmiConfig = createConfig({
   autoConnect: true,
-  publicClient
+  connectors: [],
+  publicClient,
 });
 
 export function WagmiProvider({ children }: { children: React.ReactNode }) {

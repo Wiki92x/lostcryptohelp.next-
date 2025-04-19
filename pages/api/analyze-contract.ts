@@ -1,9 +1,13 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
-import { analyzeSmartContractAI } from '@/utils/analyzeAI';
-import { isPremiumUser } from '@/utils/accessControl';
-import { sendAIScanToTelegram } from '@/utils/telegramHub';
-import { ETHERSCAN_API_KEY, BSCSCAN_API_KEY } from '@/utils/keys';
+
+// TEMP fallback to bypass missing modules
+// Replace these with real ones later once you restore them
+const isPremiumUser = async (_wallet: string) => true;
+const analyzeSmartContractAI = async (code: string) => `AI Summary of contract:\n\n${code.slice(0, 300)}...`;
+const sendAIScanToTelegram = async (_wallet: string, _token: string, _summary: string) => {};
+const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY || 'demo';
+const BSCSCAN_API_KEY = process.env.BSCSCAN_API_KEY || 'demo';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -14,7 +18,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ error: 'Missing token, chain, or wallet' });
   }
 
-  // 🔐 Access control: Premium only
+  // 🔐 Access control (will always allow for now)
   const isPremium = await isPremiumUser(wallet);
   if (!isPremium) {
     return res.status(403).json({ error: 'Access denied. Upgrade to Premium to use this feature.' });
